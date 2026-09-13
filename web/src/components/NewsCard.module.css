@@ -1,0 +1,123 @@
+.card {
+  min-width: 0;
+  padding: 13px 16px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-card);
+  box-shadow: var(--shadow-card);
+  transition:
+    var(--theme-transition),
+    transform var(--dur-base) ease;
+}
+
+.card[data-accent="cyan"] {
+  --card-accent: var(--accent-cyan);
+  --card-accent-fg: var(--accent-cyan-fg);
+}
+.card[data-accent="emerald"] {
+  --card-accent: var(--accent-emerald);
+  --card-accent-fg: var(--accent-emerald-fg);
+}
+.card[data-accent="rose"] {
+  --card-accent: var(--accent-rose);
+  --card-accent-fg: var(--accent-rose-fg);
+}
+.card[data-accent="amber"] {
+  --card-accent: var(--accent-amber);
+  --card-accent-fg: var(--accent-amber-fg);
+}
+
+.card:hover {
+  background: var(--surface-card-hover);
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-1px);
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: 6px;
+  font-size: var(--text-size-xs);
+  color: var(--text-2);
+}
+
+.time {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.source {
+  color: var(--text-2);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.label {
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--card-accent) 14%, transparent);
+  color: var(--card-accent-fg);
+  white-space: nowrap;
+}
+
+.featured {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent-amber) 16%, transparent);
+  color: var(--accent-amber-fg);
+  white-space: nowrap;
+}
+
+.title {
+  margin-bottom: 9px;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+  color: var(--text-0);
+}
+
+.title a {
+  transition: color var(--dur-fast) ease;
+}
+
+.title a:hover {
+  color: var(--card-accent-fg);
+}
+
+.points {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.point {
+  position: relative;
+  padding-left: 13px;
+  color: var(--text-1);
+  font-size: var(--text-size-sm);
+  line-height: 1.55;
+}
+
+.point::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 0.62em;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--text-2);
+  opacity: 0.6;
+}
+
+@media (max-width: 640px) {
+  .title {
+    font-size: var(--text-size-md);
+  }
+}

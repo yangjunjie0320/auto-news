@@ -1,0 +1,71 @@
+.page {
+  padding-top: var(--space-5);
+  padding-bottom: var(--space-6);
+}
+
+.hero {
+  margin-bottom: var(--space-5);
+}
+
+.h1 {
+  font-size: var(--text-size-2xl);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.sub {
+  margin: 3px 0 0;
+  color: var(--text-2);
+  font-size: var(--text-size-sm);
+}
+
+.day {
+  margin-bottom: var(--space-6);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+
+.dayHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+.dayTitle {
+  font-size: var(--text-size-lg);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.dayMeta {
+  color: var(--text-2);
+  font-size: var(--text-size-xs);
+}
+
+.lead {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-4);
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--surface-1);
+  color: var(--text-soft-strong);
+  font-size: var(--text-size-base);
+}
+
+.leadTag {
+  flex-shrink: 0;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent-rose) 15%, transparent);
+  color: var(--accent-rose-fg);
+  font-size: var(--text-size-xs);
+}
+
+.cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}

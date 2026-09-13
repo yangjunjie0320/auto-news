@@ -1,0 +1,21 @@
+.DS_Store
+
+# 抓取端运行时产物
+scraper/state/
+scraper/logs/
+scraper/config.yaml
+scraper/.venv/
+scraper/.python-version.local
+
+# 网站构建产物
+web/node_modules/
+web/.next/
+web/out/
+web/next-env.d.ts
+web/*.tsbuildinfo
+
+# 全局 ~/.gitignore 的 lib/ 规则会误伤源码目录 web/src/lib/，这里放行
+!web/src/lib/
+# 同样放行项目自己的 Claude 配置
+!CLAUDE.md
+!.claude/

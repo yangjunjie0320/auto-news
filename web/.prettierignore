@@ -1,0 +1,8 @@
+.next/
+node_modules/
+out/
+package-lock.json
+# 数据文件手工维护 / 脚本生成，不做重排
+src/data/
+# 中文文档手工折行，prettier 会重排
+*.md

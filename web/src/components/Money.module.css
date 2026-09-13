@@ -1,0 +1,16 @@
+.converted,
+.pair {
+  white-space: nowrap;
+}
+
+/* 换算值比原价弱一档，避免和原文抢注意力 */
+.approx {
+  color: var(--text-2);
+  font-size: 0.94em;
+}
+
+/* 虚线提示这是换算值。跟随文字颜色，避免在大字号标题下过于抢眼；
+   原价和汇率在 title 属性里。 */
+.converted {
+  border-bottom: 1px dotted color-mix(in srgb, currentColor 28%, transparent);
+}

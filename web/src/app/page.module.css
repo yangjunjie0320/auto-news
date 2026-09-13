@@ -1,0 +1,24 @@
+.page {
+  padding-top: var(--space-5);
+  padding-bottom: var(--space-6);
+}
+
+.hero {
+  margin-bottom: var(--space-4);
+}
+
+.h1 {
+  font-size: var(--text-size-2xl);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.sub {
+  margin: 3px 0 0;
+  color: var(--text-2);
+  font-size: var(--text-size-sm);
+}
+
+.board {
+  margin-bottom: var(--space-4);
+}

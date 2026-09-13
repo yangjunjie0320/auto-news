@@ -1,0 +1,106 @@
+.wrap {
+  position: relative;
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--border);
+}
+
+/* 右侧渐隐，提示这一栏还能横向滚动 */
+.wrap::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: var(--space-3);
+  width: 40px;
+  pointer-events: none;
+  background: linear-gradient(to right, transparent, var(--page-bg-solid));
+}
+
+.track {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+
+.track::-webkit-scrollbar {
+  display: none;
+}
+
+.all,
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  padding: 6px 11px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-1);
+  white-space: nowrap;
+  transition:
+    background var(--dur-fast) ease,
+    color var(--dur-fast) ease,
+    border-color var(--dur-fast) ease;
+}
+
+.all {
+  font-size: var(--text-size-sm);
+  font-weight: 600;
+}
+
+.all:hover,
+.brand:hover {
+  background: var(--surface-2);
+  color: var(--text-0);
+}
+
+.all[data-active="true"],
+.brand[data-active="true"] {
+  background: var(--surface-3);
+  border-color: var(--border-strong);
+  color: var(--text-0);
+}
+
+/* 文字 wordmark：靠字重和字间距做识别度，等真 logo 放进来后替换 */
+.wordmark {
+  font-size: var(--text-size-sm);
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+/* 国际品牌弱一档，让中国品牌在视觉上先被看到 */
+.brand[data-origin="INTL"] .wordmark {
+  font-weight: 600;
+  opacity: 0.75;
+}
+
+.brand[data-origin="INTL"][data-active="true"] .wordmark {
+  opacity: 1;
+}
+
+.count {
+  color: var(--text-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-size-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.brand[data-active="true"] .count,
+.all[data-active="true"] .count {
+  color: var(--text-1);
+}
+
+.divider {
+  flex-shrink: 0;
+  width: 1px;
+  height: 18px;
+  margin: 0 var(--space-2);
+  background: var(--border-strong);
+}

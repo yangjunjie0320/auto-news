@@ -1,0 +1,232 @@
+/* 设计 token：结构参考 AIHOT，色相换成汽车主题（暗色为默认，机械灰蓝 + 刹车灯橙红） */
+:root,
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg-0: #0f1319;
+  --bg-1: #161b23;
+  --bg-2: #1b212b;
+  --surface-0: rgba(255, 255, 255, 0.03);
+  --surface-1: rgba(255, 255, 255, 0.04);
+  --surface-2: rgba(255, 255, 255, 0.07);
+  --surface-3: rgba(255, 255, 255, 0.1);
+  --surface-card: #161b23;
+  --surface-card-hover: #1b212b;
+  --surface-elevated: #1b212b;
+
+  --text-0: #e9ecf1;
+  --text-1: #9aa4b2;
+  --text-2: #7a8494;
+  --text-soft-strong: rgba(233, 236, 241, 0.85);
+  --text-soft-medium: rgba(233, 236, 241, 0.55);
+
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.13);
+  --border-soft: rgba(255, 255, 255, 0.06);
+  --border-emphasis: rgba(255, 255, 255, 0.22);
+
+  --shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+  --shadow-soft: 0 6px 18px rgba(0, 0, 0, 0.35);
+  --shadow-card: none;
+  --shadow-card-hover: 0 8px 24px rgba(0, 0, 0, 0.4);
+
+  /* accent：rose=刹车灯橙红（热点）cyan=电动蓝（新车）emerald=新能源绿（销量）amber=琥珀 */
+  --accent-rose: #e2603f;
+  --accent-cyan: #4a9ec9;
+  --accent-emerald: #5fc79a;
+  --accent-amber: #d9b46a;
+  --accent-rose-fg: #ee7a58;
+  --accent-cyan-fg: #6fb4d9;
+  --accent-emerald-fg: #5fc79a;
+  --accent-amber-fg: #d9b46a;
+
+  --rank-1: #e2603f;
+  --rank-2: #d68a52;
+  --rank-3: #d9b46a;
+  --rank-rest: #7a8494;
+
+  --page-bg-solid: #0f1319;
+  --header-bg: rgba(15, 19, 25, 0.82);
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  --bg-0: #f5f6f7;
+  --bg-1: #f0f1f3;
+  --bg-2: #e4e6e9;
+  --surface-0: rgba(24, 33, 45, 0.025);
+  --surface-1: rgba(24, 33, 45, 0.04);
+  --surface-2: rgba(24, 33, 45, 0.06);
+  --surface-3: rgba(24, 33, 45, 0.09);
+  --surface-card: #ffffff;
+  --surface-card-hover: #ffffff;
+  --surface-elevated: #ffffff;
+
+  --text-0: #18212d;
+  --text-1: #5a6470;
+  --text-2: #6a7481;
+  --text-soft-strong: rgba(24, 33, 45, 0.92);
+  --text-soft-medium: rgba(24, 33, 45, 0.55);
+
+  --border: #e3e5e8;
+  --border-strong: #d7dade;
+  --border-soft: #edeef0;
+  --border-emphasis: #89939f;
+
+  --shadow: 0 12px 32px rgba(24, 33, 45, 0.12);
+  --shadow-soft: 0 4px 12px rgba(24, 33, 45, 0.06);
+  --shadow-card: 0 1px 2px rgba(24, 33, 45, 0.05);
+  --shadow-card-hover: 0 6px 18px rgba(24, 33, 45, 0.09);
+
+  --accent-rose: #b8422a;
+  --accent-cyan: #1a6285;
+  --accent-emerald: #2f7d5c;
+  --accent-amber: #96702e;
+  --accent-rose-fg: #b8422a;
+  --accent-cyan-fg: #1a6285;
+  --accent-emerald-fg: #2a6e51;
+  --accent-amber-fg: #7c5a24;
+
+  --rank-1: #b8422a;
+  --rank-2: #a3642f;
+  --rank-3: #96702e;
+  --rank-rest: #6a7481;
+
+  --page-bg-solid: #f5f6f7;
+  --header-bg: rgba(245, 246, 247, 0.85);
+}
+
+:root {
+  --font-body:
+    system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+    "Hiragino Sans GB", "HarmonyOS Sans SC", "Microsoft YaHei", sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, monospace;
+
+  --radius-sm: 8px;
+  --radius: 12px;
+  --radius-lg: 16px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  --text-size-xs: 0.75rem;
+  --text-size-sm: 0.8125rem;
+  --text-size-base: 0.875rem;
+  --text-size-md: 1rem;
+  --text-size-lg: 1.125rem;
+  --text-size-xl: 1.25rem;
+  --text-size-2xl: 1.5rem;
+
+  --content-width: 860px;
+  --header-height: 56px;
+  --sidebar-width: 240px;
+
+  --dur-press: 80ms;
+  --dur-fast: 120ms;
+  --dur-base: 160ms;
+  --dur-enter: 240ms;
+  --theme-transition:
+    background-color 220ms ease, background 220ms ease, color 180ms ease,
+    border-color 180ms ease, box-shadow 220ms ease;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  transition: var(--theme-transition);
+  background: var(--page-bg-solid);
+  color: var(--text-0);
+  font-family: var(--font-body);
+  font-size: var(--text-size-base);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent-cyan-fg);
+  outline-offset: 2px;
+}
+
+.container {
+  width: 100%;
+  max-width: var(--content-width);
+  margin: 0 auto;
+  padding: 0 var(--space-5);
+}
+
+@media (max-width: 640px) {
+  .container {
+    padding: 0 var(--space-4);
+  }
+}
+
+.shell {
+  display: grid;
+  grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+.shell > * {
+  min-width: 0;
+}
+
+.content {
+  min-width: 0;
+}
+
+.siteFooter {
+  padding-top: var(--space-6);
+  padding-bottom: var(--space-6);
+}
+
+.siteFooter p {
+  margin: 0;
+  color: var(--text-2);
+  font-size: var(--text-size-xs);
+}
+
+@media (max-width: 900px) {
+  .shell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

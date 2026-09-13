@@ -1,0 +1,167 @@
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--border);
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-1);
+  font-size: var(--text-size-base);
+  transition:
+    background var(--dur-fast) ease,
+    color var(--dur-fast) ease,
+    border-color var(--dur-fast) ease;
+}
+
+.tab:hover {
+  background: var(--surface-2);
+  color: var(--text-0);
+}
+
+/* 选中态用实心品牌色：页面里唯一的实心色块，兼作亮色主题的视觉锚点 */
+.tab[data-active="true"] {
+  background: var(--accent-rose);
+  border-color: var(--accent-rose);
+  color: #fff;
+  font-weight: 600;
+}
+
+.tab[data-active="true"]:hover {
+  background: var(--accent-rose);
+  color: #fff;
+}
+
+.count {
+  color: var(--text-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-size-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.tab[data-active="true"] .count {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-width: 200px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 9px;
+  color: var(--text-2);
+  pointer-events: none;
+}
+
+.input {
+  width: 100%;
+  padding: 6px 28px 6px 30px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-1);
+  color: var(--text-0);
+  font: inherit;
+  font-size: var(--text-size-sm);
+  transition:
+    border-color var(--dur-fast) ease,
+    background var(--dur-fast) ease;
+}
+
+.input::placeholder {
+  color: var(--text-2);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--border-emphasis);
+  background: var(--surface-0);
+}
+
+.input::-webkit-search-cancel-button {
+  display: none;
+}
+
+.clear {
+  position: absolute;
+  right: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 17px;
+  height: 17px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--surface-3);
+  color: var(--text-1);
+  font-size: 13px;
+  line-height: 1;
+  transition: background var(--dur-fast) ease;
+}
+
+.clear:hover {
+  background: var(--border-emphasis);
+  color: var(--text-0);
+}
+
+.result {
+  margin: 0 0 var(--space-4);
+  color: var(--text-1);
+  font-size: var(--text-size-sm);
+}
+
+.result strong {
+  color: var(--text-0);
+  font-family: var(--font-mono);
+}
+
+.empty {
+  color: var(--text-2);
+  font-size: var(--text-size-sm);
+}
+
+@media (max-width: 640px) {
+  .search {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+.reset {
+  margin-left: var(--space-3);
+  padding: 2px 9px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-2);
+  font-size: var(--text-size-xs);
+  transition:
+    background var(--dur-fast) ease,
+    color var(--dur-fast) ease;
+}
+
+.reset:hover {
+  background: var(--surface-2);
+  color: var(--text-0);
+}

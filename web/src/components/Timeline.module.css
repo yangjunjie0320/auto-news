@@ -1,0 +1,121 @@
+.timeline {
+  --tl-time-w: 64px;
+  --tl-rail-w: 22px;
+  --tl-dot-top: 20px;
+  display: grid;
+  gap: 22px;
+}
+
+.day {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.dayHead {
+  display: grid;
+  grid-template-columns: var(--tl-time-w) var(--tl-rail-w) minmax(0, 1fr);
+  align-items: baseline;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: var(--space-2) 0;
+  background: var(--page-bg-solid);
+  transition: var(--theme-transition);
+}
+
+.date {
+  margin: 0;
+  text-align: right;
+  white-space: nowrap;
+  color: var(--text-0);
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.dayMeta {
+  margin: 0;
+  padding-left: 2px;
+  color: var(--text-2);
+  font-size: 11.5px;
+}
+
+.items {
+  position: relative;
+  display: grid;
+  gap: 0;
+}
+
+/* 贯穿整组的轨道竖线，落在 rail 列的中线上 */
+.items::before {
+  content: "";
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  left: calc(var(--tl-time-w) + var(--tl-rail-w) / 2);
+  width: 1px;
+  background: var(--border-strong);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.item {
+  display: grid;
+  grid-template-columns: var(--tl-time-w) var(--tl-rail-w) minmax(0, 1fr);
+  align-items: start;
+  padding-bottom: 12px;
+}
+
+.item[data-accent="cyan"] {
+  --tl-accent: var(--accent-cyan);
+}
+.item[data-accent="emerald"] {
+  --tl-accent: var(--accent-emerald);
+}
+.item[data-accent="rose"] {
+  --tl-accent: var(--accent-rose);
+}
+.item[data-accent="amber"] {
+  --tl-accent: var(--accent-amber);
+}
+
+.time {
+  padding-top: calc(var(--tl-dot-top) - 7px);
+  text-align: right;
+  color: var(--text-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-size-xs);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.railCell {
+  position: relative;
+  display: block;
+  height: 100%;
+}
+
+.dot {
+  position: absolute;
+  top: var(--tl-dot-top);
+  left: 50%;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--tl-accent);
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 0 3px var(--page-bg-solid);
+  transition: var(--theme-transition);
+}
+
+/* 窄屏：收起时间列和轨道，时间回到卡片内部由 NewsCard 显示 */
+@media (max-width: 640px) {
+  .timeline {
+    --tl-time-w: 44px;
+    --tl-rail-w: 16px;
+  }
+
+  .date {
+    font-size: 14px;
+  }
+}
