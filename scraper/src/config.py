@@ -22,6 +22,11 @@ class Settings(BaseSettings):
         yaml_file_encoding="utf-8",
     )
 
+    # 飞书投递总开关。关掉后不建 lark 客户端、不推卡片、不跑转发与日报调度，
+    # 抓取链路只剩「轮询 -> 分类翻译 -> 写 digest jsonl」，供网站消费。
+    # 关掉时 app_id/app_secret/chat_id 都不再需要。
+    feishu_enabled: bool = True
+
     # 飞书自建应用
     app_id: str = ""
     app_secret: str = ""
@@ -73,6 +78,13 @@ class Settings(BaseSettings):
     deepseek_base_url: str = "https://api.deepseek.com"
     deepseek_model: str = "deepseek-chat"
     classify_timeout: float = Field(default=15.0, gt=0)
+
+    # 逐条中译英，结果写进 digest 的 title_en/summary_en 供英文站与英文 RSS 使用。
+    # 分类之后单独调一次，不与分类合并：混在一次调用里会漏翻专有名词、串品牌名
+    # （2026-08-07 实测把「享界」翻成 AITO），详见 src/digest/detail.py 模块注释。
+    translate_enabled: bool = True
+    translate_max_tokens: int = Field(default=4000, gt=0)
+    translate_timeout: float = Field(default=30.0, gt=0)
 
     # 日报聚合：网站新闻聚成事件，每个事件下挂微博讨论
     digest_enabled: bool = False

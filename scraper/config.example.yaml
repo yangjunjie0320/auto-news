@@ -1,7 +1,12 @@
 # auto-news-monitor 配置模板。复制为 config.yaml 并填入真实值（config.yaml 不入 git）。
 # 所有键支持 AUTO_NEWS_MONITOR_ 前缀的环境变量覆盖。
 
-# 飞书自建应用凭证（必填）。权限：im:message、im:resource、im:chat:readonly。
+# 飞书投递总开关。只给网站供数据时设成 false：不建飞书客户端、不推卡片、
+# 不跑转发与日报调度，链路只剩「轮询 -> 分类翻译 -> 写 digest jsonl」。
+# 设成 false 时下面三个凭证都不需要填。
+feishu_enabled: true
+
+# 飞书自建应用凭证（feishu_enabled 为 true 时必填）。权限：im:message、im:resource、im:chat:readonly。
 app_id: ""
 app_secret: ""
 chat_id: ""            # 推送目标群（--list-chats 挑）
@@ -27,6 +32,11 @@ classification_enabled: true
 deepseek_api_key: ""
 promo_to_digest_only: true   # 软文/通稿不推实时卡片，只落日报池
 
+# 逐条中译英，结果写进 digest 的 title_en/summary_en，供英文站与英文 RSS 使用。
+# 分类之后单独调一次，不与分类合并（混在一起会串品牌英文名）。
+# 失败只降级成没有英文，中文字段不受影响。
+translate_enabled: true
+
 # 卡片转发与多维表格归档（可选）
 forward_enabled: false
 forward_chat_id: ""
@@ -40,6 +50,9 @@ log_dir: logs
 # 挂载到事件下或聚成新事件。事件二分：详讯（有网站文章或多条微博）与
 # 短讯（单条微博 + 散装观点）。卡片放详讯的标题+中文缩写；英文对照、
 # 图片、原文进飞书文档，默认折叠。
+# 注意：digest_enabled 控制的是「写不写 state/digest/*.jsonl」，网站的全部输入就是它，
+# 只给网站供数据时必须设成 true。08:00 的日报聚合另外还要求有飞书客户端，
+# 所以 feishu_enabled: false 时它不会启动。
 digest_enabled: false
 digest_send_time: "08:00"        # 北京时间，覆盖前一自然日
 digest_pool_enabled: true        # 账号池（pool.yaml，沿用 weibo-monitor 的清单）

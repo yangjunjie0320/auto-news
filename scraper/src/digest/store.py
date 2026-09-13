@@ -33,6 +33,11 @@ class DigestRecord(BaseModel):
     # 详讯需要原文与配图；默认值保证旧格式 JSONL 行可正常反序列化
     full_text: str = ""
     image_urls: list[str] = Field(default_factory=list)
+    # 英文对照，供英文站与英文 RSS 使用。是并列字段不是替换：中文字段还要供
+    # 中文 RSS 和网站的热度打分（compute_heat 匹配中文关键词）使用。
+    # 翻译失败时留空，网站端会回退中文并标记 translated=false。
+    title_en: str = ""
+    summary_en: str = ""
 
 
 def cn_date(moment: dt.datetime) -> dt.date:

@@ -81,7 +81,7 @@ async def _run(settings: Settings, *, once: bool, dry_run: bool) -> None:
         raise RuntimeError("no enabled sources")
 
     lark_client = None
-    if not dry_run:
+    if settings.feishu_enabled and not dry_run:
         if not settings.chat_id:
             raise RuntimeError("chat_id must be configured (use --list-chats to pick one)")
         lark_client = build_lark_client(settings)
@@ -110,11 +110,15 @@ async def _run(settings: Settings, *, once: bool, dry_run: bool) -> None:
         monitor = Monitor(settings, fetchers, state, pusher, health, http_client)
 
         logger.info(
-            "auto-news-monitor started: sources=%d interval=%ds dry_run=%s forward=%s",
+            "auto-news-monitor started: sources=%d interval=%ds dry_run=%s "
+            "feishu=%s forward=%s digest=%s translate=%s",
             len(fetchers),
             settings.poll_interval_seconds,
             dry_run,
+            settings.feishu_enabled,
             forward_on,
+            digest_store is not None,
+            settings.translate_enabled and bool(settings.deepseek_api_key),
         )
         if once:
             summary = await monitor.run_cycle()
@@ -169,21 +173,35 @@ async def _digest_once(settings: Settings, day_text: str, *, dry_run: bool) -> i
 def _self_check(settings: Settings, config_path: str | Path | None = None) -> None:
     sources = load_sources(settings.sources_file)
     build_fetchers(sources)
-    if not settings.app_id or not settings.app_secret or not settings.chat_id:
-        raise RuntimeError("app_id, app_secret and chat_id must be configured")
+    if settings.feishu_enabled:
+        if not settings.app_id or not settings.app_secret or not settings.chat_id:
+            raise RuntimeError("app_id, app_secret and chat_id must be configured")
+    elif settings.classification_enabled and not settings.deepseek_api_key:
+        # 关掉飞书后网站是唯一出口，分类没跑等于产出空标签，必须挡住
+        raise RuntimeError("deepseek_api_key must be configured when feishu is disabled")
 
-    for raw_path in (
-        settings.state_file,
-        settings.health_file,
-        settings.card_store_file,
-        settings.forwarded_file,
-    ):
+    checked = [settings.state_file, settings.health_file]
+    if settings.feishu_enabled:
+        checked += [settings.card_store_file, settings.forwarded_file]
+    if settings.digest_enabled:
+        checked.append(settings.digest_state_file)
+    for raw_path in checked:
         path = Path(raw_path)
         if path.exists():
             load_json_object(path)
         parent = path.parent
         if not parent.exists() or not os.access(parent, os.W_OK):
             raise RuntimeError(f"state directory is not writable: {parent}")
+
+    if settings.digest_enabled:
+        # 网站的全部输入落在 digest_dir，而 DigestStore.append 把 OSError 吞掉只记日志，
+        # 权限不对是完全静默的，所以这里必须挡住。目录可能还没建（append 会自己建），
+        # 那就检查最近的已存在祖先。
+        probe = Path(settings.digest_dir).resolve()
+        while not probe.exists() and probe.parent != probe:
+            probe = probe.parent
+        if not os.access(probe, os.W_OK):
+            raise RuntimeError(f"digest directory is not writable: {settings.digest_dir}")
 
     if config_path is not None:
         path = Path(config_path)

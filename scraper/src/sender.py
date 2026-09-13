@@ -16,6 +16,7 @@ from .config import Settings
 from .digest.store import DigestRecord, DigestStore
 from .image_uploader import upload_image
 from .models import Post, PushResult
+from .translate import translate_article
 
 logger = logging.getLogger(__name__)
 
@@ -84,22 +85,32 @@ class PostPusher:
         self._settings = settings
         self._lark_client = lark_client
         self._http_client = http_client
+        # CardSender 构造是惰性的（只在真正发送时才用到 lark 客户端），
+        # 关飞书由 push 里的 feishu_enabled 分支拦住，不在这里判空
         self._sender = CardSender(settings, lark_client)
         self._card_store = card_store
         self._digest_store = digest_store
         self._dry_run = dry_run
 
-    def _digest_record(self, post: Post, result) -> DigestRecord:
+    async def _digest_record(self, post: Post, result) -> DigestRecord:
+        title = result.headline or post.title or post.text_plain[:60]
+        summary = result.summary.strip()
+        # 翻译是软依赖：失败只是没有英文，中文字段照常完整
+        title_en, summary_en = await translate_article(
+            title, summary, self._settings, self._http_client
+        )
         return DigestRecord(
             mid=post.mid,
             source=post.screen_name,
-            title=result.headline or post.title or post.text_plain[:60],
-            summary=result.summary.strip(),
+            title=title,
+            summary=summary,
             label=result.label,
             url=post.url,
             created_at=post.created_at,
             full_text=post.full_text or post.text_plain,
             image_urls=list(post.image_urls),
+            title_en=title_en,
+            summary_en=summary_en,
         )
 
     async def push(self, post: Post) -> PushResult:
@@ -126,7 +137,21 @@ class PostPusher:
                 post.url,
             )
             if self._digest_store is not None and not self._dry_run:
-                self._digest_store.append(self._digest_record(post, result))
+                self._digest_store.append(await self._digest_record(post, result))
+            return PushResult.processed()
+
+        # 关掉飞书时链路到此为止：只落 digest 供网站消费，不组卡片不发送。
+        # 注意不要挪到 promo 分支之前——promo 的判定与日志仍然有意义。
+        if not self._settings.feishu_enabled:
+            if self._digest_store is not None and not self._dry_run:
+                self._digest_store.append(await self._digest_record(post, result))
+            logger.info(
+                "post archived (feishu off): name=%s mid=%s label=%s url=%s",
+                post.screen_name,
+                post.mid,
+                result.label,
+                post.url,
+            )
             return PushResult.processed()
 
         image_key = None
@@ -176,5 +201,5 @@ class PostPusher:
                 },
             )
         if self._digest_store is not None:
-            self._digest_store.append(self._digest_record(post, result))
+            self._digest_store.append(await self._digest_record(post, result))
         return PushResult.sent()
