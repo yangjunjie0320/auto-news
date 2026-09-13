@@ -8,6 +8,16 @@ export const metadata: Metadata = {
   title: "AUTOHOT — China Auto Industry News · Daily Picks and Launch Digest",
   description:
     "AUTOHOT curates daily news from China's auto industry: new car launches, sales data and industry buzz. Everything worth knowing today, in one place.",
+  // 两个 feed 由 scripts/build-data.py 写进 public/，这里只是发现入口。
+  // 网站本身只有英文；中文 feed 是给中文读者的另一条出口，且不经过翻译链路。
+  alternates: {
+    types: {
+      "application/rss+xml": [
+        { url: "/rss.xml", title: "AUTOHOT — English" },
+        { url: "/rss.zh.xml", title: "AUTOHOT — 中文" },
+      ],
+    },
+  },
 };
 
 /**

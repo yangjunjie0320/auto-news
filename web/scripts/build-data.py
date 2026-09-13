@@ -14,16 +14,27 @@ import os
 import re
 import urllib.error
 import urllib.request
+import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
+from email.utils import format_datetime
+from xml.sax.saxutils import escape as xml_escape
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_SOURCE = os.path.expanduser(
-    "~/work/auto-news-monitor/code/auto-news-monitor/state/digest"
+# 单仓库内的相对路径，不再依赖某台机器上的绝对路径。
+# 容器里用 --source 指到挂载的 state volume。
+DEFAULT_SOURCE = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+    "scraper",
+    "state",
+    "digest",
 )
 DEFAULT_OUT = "src/data/news.json"
 DEFAULT_TRANSLATIONS = "src/data/translations.en.json"
 DEFAULT_BRANDS = "src/data/brands.json"
+DEFAULT_PUBLIC_DIR = "public"
+# RSS 自引用链接需要站点公开地址；没配时用占位值并告警，不让构建失败。
+PLACEHOLDER_BASE_URL = "https://autohot.example"
 
 # 汇率：构建时拉一次并固化进快照，前端不发网络请求。
 RATE_API = "https://open.er-api.com/v6/latest/CNY"
@@ -33,10 +44,25 @@ FALLBACK_CNY_USD = 0.1482
 CST = timezone(timedelta(hours=8))
 
 # 分类 -> 展示用的短标签与配色 key（对应 CSS 里的 --accent-*）
+#
+# 抓取端产出 10 个分类（「广告」「汽车无关」在推送前就被丢弃，到不了这里），
+# 这里必须覆盖剩下的 8 个，否则未映射的会全部塌成 "Other"。
+#
+# accent 只有 cyan/emerald/rose/amber 四个值（globals.css 的 token 与 lib/news.ts
+# 的 Accent 联合类型都是这四个），所以按语义归组、两两共用一色，不要新增颜色。
 LABEL_META = {
+    # 产品线
     "产品发布": {"slug": "launch", "accent": "cyan", "en": "Product Launch"},
+    "谍照申报": {"slug": "spy", "accent": "cyan", "en": "Spy Shots"},
+    # 数字与资本
     "市场数据": {"slug": "market", "accent": "emerald", "en": "Market Data"},
+    "资本市场": {"slug": "capital", "accent": "emerald", "en": "Capital Markets"},
+    # 热点与出海
     "车圈热点": {"slug": "hot", "accent": "rose", "en": "Industry Buzz"},
+    "出海信息": {"slug": "export", "accent": "rose", "en": "Going Global"},
+    # 政策与分析
+    "政策监管": {"slug": "policy", "accent": "amber", "en": "Policy"},
+    "行业观察": {"slug": "analysis", "accent": "amber", "en": "Analysis"},
 }
 FALLBACK_LABEL = {"slug": "other", "accent": "amber", "en": "Other"}
 
@@ -152,6 +178,43 @@ def load_rows(source_dir: str) -> list[dict]:
     return rows
 
 
+CJK_RE = re.compile(r"[一-鿿]")
+
+
+def _usable_english(title: str, points: list[str]) -> tuple[str, list[str]] | None:
+    """英文必须成套且确实是英文，否则宁可整条回退中文。
+
+    半中半英比纯中文更糟：页面上一半是英文一半是汉字，而且 translated 标记会
+    骗过 /about 页的未翻译计数，让它失去质量指标的意义。
+    """
+    if not isinstance(title, str) or not title.strip():
+        return None
+    if not isinstance(points, list) or not points:
+        return None
+    if not all(isinstance(p, str) and p.strip() for p in points):
+        return None
+    if CJK_RE.search(title) or any(CJK_RE.search(p) for p in points):
+        return None
+    return title, points
+
+
+def _pick_english(row: dict, translations: dict) -> tuple[str, list[str]] | None:
+    """人工覆盖 > 抓取端机翻 > 无。两者都要过 _usable_english。"""
+    manual = translations.get(row["mid"])
+    if isinstance(manual, dict):
+        picked = _usable_english(manual.get("title", ""), manual.get("points", []))
+        if picked is not None:
+            return picked
+        logger.warning("manual translation unusable, falling through: mid=%s", row["mid"])
+
+    machine_points = [
+        p.lstrip("- ").strip()
+        for p in row.get("summary_en", "").splitlines()
+        if p.strip().startswith("-")
+    ]
+    return _usable_english(row.get("title_en", ""), machine_points)
+
+
 def transform(row: dict, translations: dict) -> dict:
     created = datetime.fromisoformat(row["created_at"].replace("Z", "+00:00"))
     local = created.astimezone(CST)
@@ -162,12 +225,14 @@ def transform(row: dict, translations: dict) -> dict:
         if p.strip().startswith("-")
     ]
 
-    # 有英文翻译就用，没有就回退中文并标记，供前端提示
-    tr = translations.get(row["mid"])
-    translated = bool(tr)
-    title = tr["title"] if translated else row["title"]
+    # 英文三级优先：人工覆盖 > 抓取端机翻 > 回退中文并标记，供前端提示。
+    # 人工排第一是为了能手工修正机翻而不必改抓取端；抓取端上线前的历史条目
+    # 也只有人工翻译这一份。
+    english = _pick_english(row, translations)
+    translated = english is not None
+    title = english[0] if translated else row["title"]
     if translated:
-        points = tr["points"]
+        points = english[1]
 
     site = row["source"].split("·")[0]
     return {
@@ -204,6 +269,125 @@ def mark_featured(items: list[dict]) -> None:
         it["featured"] = True
 
 
+ATOM_NS = "http://www.w3.org/2005/Atom"
+RSS_ITEM_LIMIT = 50
+
+FEED_META = {
+    "en": {
+        "path": "rss.xml",
+        "language": "en",
+        "title": "AUTOHOT — China Auto Industry News",
+        "description": (
+            "Daily news from China's auto industry: new car launches, "
+            "sales data and industry buzz."
+        ),
+    },
+    "zh": {
+        "path": "rss.zh.xml",
+        "language": "zh-CN",
+        "title": "AUTOHOT — 中国汽车行业资讯",
+        "description": "每天的中国汽车行业新闻：新车上市、销量数据与车圈热点。",
+    },
+}
+
+
+def _rss_description(points: list[str]) -> str:
+    """要点渲染成 HTML 列表。
+
+    这里先按 HTML 转义一次，ElementTree 写出时会再按 XML 转义一次；
+    阅读器解一次 XML 转义后拿到的正是合法 HTML。
+    """
+    body = "".join(f"<li>{xml_escape(p)}</li>" for p in points if p)
+    return f"<ul>{body}</ul>" if body else ""
+
+
+def build_feed(
+    entries: list[dict],
+    *,
+    lang: str,
+    base_url: str,
+    generated_at: datetime,
+) -> bytes:
+    meta = FEED_META[lang]
+    feed_url = f"{base_url.rstrip('/')}/{meta['path']}"
+
+    rss = ET.Element("rss", {"version": "2.0", "xmlns:atom": ATOM_NS})
+    channel = ET.SubElement(rss, "channel")
+    ET.SubElement(channel, "title").text = meta["title"]
+    ET.SubElement(channel, "link").text = base_url.rstrip("/") + "/"
+    ET.SubElement(channel, "description").text = meta["description"]
+    ET.SubElement(channel, "language").text = meta["language"]
+    ET.SubElement(channel, "lastBuildDate").text = format_datetime(
+        generated_at, usegmt=True
+    )
+    ET.SubElement(
+        channel,
+        "atom:link",
+        {"href": feed_url, "rel": "self", "type": "application/rss+xml"},
+    )
+
+    for entry in entries[:RSS_ITEM_LIMIT]:
+        node = ET.SubElement(channel, "item")
+        ET.SubElement(node, "title").text = entry["title"]
+        ET.SubElement(node, "link").text = entry["url"]
+        ET.SubElement(node, "description").text = _rss_description(entry["points"])
+        ET.SubElement(node, "category").text = entry["label"]
+        guid = ET.SubElement(node, "guid", {"isPermaLink": "false"})
+        guid.text = entry["id"]
+        ET.SubElement(node, "pubDate").text = format_datetime(
+            datetime.fromisoformat(entry["publishedAt"].replace("Z", "+00:00")),
+            usegmt=True,
+        )
+
+    return ET.tostring(rss, encoding="utf-8", xml_declaration=True)
+
+
+def write_feeds(
+    items: list[dict],
+    rows_by_mid: dict[str, dict],
+    *,
+    public_dir: str,
+    base_url: str,
+    generated_at: datetime,
+) -> None:
+    """写出中英两个 feed。
+
+    英文取 items（已应用翻译，未翻译的条目带中文回退，与网站显示一致，
+    不静默丢条目）。中文直接取原始 digest 行，因此不依赖翻译链路——
+    DeepSeek 挂了中文 feed 照常完整发布。
+    """
+    zh_entries = []
+    for it in items:
+        row = rows_by_mid.get(it["id"])
+        if row is None:
+            continue
+        zh_entries.append(
+            {
+                "id": it["id"],
+                "title": row["title"],
+                "points": [
+                    p.lstrip("- ").strip()
+                    for p in row.get("summary", "").splitlines()
+                    if p.strip().startswith("-")
+                ],
+                "label": row.get("label", ""),
+                "url": it["url"],
+                "publishedAt": it["publishedAt"],
+            }
+        )
+
+    os.makedirs(public_dir, exist_ok=True)
+    for lang, entries in (("en", items), ("zh", zh_entries)):
+        path = os.path.join(public_dir, FEED_META[lang]["path"])
+        with open(path, "wb") as fh:
+            fh.write(
+                build_feed(
+                    entries, lang=lang, base_url=base_url, generated_at=generated_at
+                )
+            )
+        logger.info("写出 %d 条到 %s", min(len(entries), RSS_ITEM_LIMIT), path)
+
+
 def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
     parser = argparse.ArgumentParser()
@@ -211,11 +395,28 @@ def main() -> None:
     parser.add_argument("--out", default=DEFAULT_OUT)
     parser.add_argument("--translations", default=DEFAULT_TRANSLATIONS)
     parser.add_argument("--brands", default=DEFAULT_BRANDS)
+    parser.add_argument("--public-dir", default=DEFAULT_PUBLIC_DIR)
+    parser.add_argument(
+        "--base-url",
+        default=os.environ.get("SITE_BASE_URL", ""),
+        help="站点公开地址，用于 RSS 的自引用链接。也可用 SITE_BASE_URL 环境变量。",
+    )
     args = parser.parse_args()
+
+    base_url = args.base_url or PLACEHOLDER_BASE_URL
+    if base_url == PLACEHOLDER_BASE_URL:
+        logger.warning(
+            "未设置 --base-url / SITE_BASE_URL，RSS 自引用链接会是占位值 %s，"
+            "上线前必须设成真实域名",
+            PLACEHOLDER_BASE_URL,
+        )
 
     translations = load_translations(args.translations)
     brands = load_brands(args.brands)
-    items = [transform(r, translations) for r in load_rows(args.source)]
+    rows = load_rows(args.source)
+    # 中文 feed 要用原始中文字段，而 transform 只留英文，所以按 mid 留一份索引
+    rows_by_mid = {r["mid"]: r for r in rows}
+    items = [transform(r, translations) for r in rows]
     items.sort(key=lambda it: it["publishedAt"], reverse=True)
     mark_featured(items)
 
@@ -257,8 +458,9 @@ def main() -> None:
                 {"name": it["label"], "slug": it["labelSlug"], "accent": it["accent"]}
             )
 
+    generated_at = datetime.now(timezone.utc)
     payload = {
-        "generatedAt": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "generatedAt": generated_at.isoformat().replace("+00:00", "Z"),
         "rate": fetch_rate(),
         "labels": labels,
         "brands": brand_out,
@@ -273,6 +475,14 @@ def main() -> None:
     if untranslated:
         logger.warning("%d 条没有英文翻译，已回退中文", untranslated)
     logger.info("写出 %d 条到 %s", len(items), args.out)
+
+    write_feeds(
+        items,
+        rows_by_mid,
+        public_dir=args.public_dir,
+        base_url=base_url,
+        generated_at=generated_at,
+    )
 
 
 if __name__ == "__main__":

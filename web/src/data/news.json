@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-08-30T08:26:33.296324Z",
+  "generatedAt": "2026-09-13T14:57:14.047266Z",
   "rate": {
-    "cnyToUsd": 0.148239,
-    "fetchedAt": "Sun, 30 Aug 2026 00:02:31 +0000",
+    "cnyToUsd": 0.148571,
+    "fetchedAt": "Sun, 13 Sep 2026 00:02:31 +0000",
     "source": "open.er-api.com",
     "stale": false
   },
