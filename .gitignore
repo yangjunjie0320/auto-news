@@ -19,3 +19,6 @@ web/*.tsbuildinfo
 # 同样放行项目自己的 Claude 配置
 !CLAUDE.md
 !.claude/
+
+# 部署配置含密钥
+deploy/config.yaml

@@ -1,0 +1,101 @@
+# 三个服务，两个卷。只有 scraper 是真正常驻工作的进程；
+# builder 是个 sleep 循环，nginx 只发静态文件。
+#
+# scraper 和 builder 必须同一个 UID：atomic_json.py 会把 state 目录 chmod 成
+# 0700，UID 不同 builder 读不到 digest。
+
+x-appuser: &appuser "10001:10001"
+
+services:
+  # 首次启动时 state 卷是空的，把仓库里的历史 digest 拷进去，
+  # 站点第一天就有内容，不必等抓取积累。
+  # 幂等：digest 目录已有内容就什么都不做。跑完即退出，属正常状态。
+  seed:
+    # 复用 scraper 镜像：只用到 sh 和 cp，没必要为此多拉一个外部镜像
+    build:
+      context: ../scraper
+    image: auto-news-scraper
+    user: *appuser
+    volumes:
+      - state:/data/state
+      - ../seed:/seed:ro
+    command:
+      - /bin/sh
+      - -c
+      - |
+        set -eu
+        mkdir -p /data/state/digest
+        if [ -n "$$(ls -A /data/state/digest 2>/dev/null)" ]; then
+          echo "[seed] digest 已有数据，跳过"
+        else
+          cp /seed/digest/*.jsonl /data/state/digest/
+          echo "[seed] 注入 $$(ls -1 /data/state/digest | wc -l) 个文件"
+        fi
+
+  scraper:
+    build:
+      context: ../scraper
+    image: auto-news-scraper
+    restart: always
+    user: *appuser
+    depends_on:
+      seed:
+        condition: service_completed_successfully
+    volumes:
+      - state:/data/state
+      - logs:/data/logs
+      # config.yaml 里有 deepseek_api_key，宿主机上权限要是 0600：
+      # --self-check 会拒绝任何带 group/other 权限位的配置文件
+      - ./config.yaml:/config/config.yaml:ro
+    environment:
+      # Settings 的路径字段都是相对 CWD 的，这里全部指到挂载卷。
+      # 每个字段都支持 AUTO_NEWS_MONITOR_<字段名大写> 覆盖，不用改代码。
+      AUTO_NEWS_MONITOR_DIGEST_DIR: /data/state/digest
+      AUTO_NEWS_MONITOR_DIGEST_STATE_FILE: /data/state/digest.json
+      AUTO_NEWS_MONITOR_DIGEST_OUTBOX_FILE: /data/state/digest_outbox.json
+      AUTO_NEWS_MONITOR_STATE_FILE: /data/state/seen.json
+      AUTO_NEWS_MONITOR_HEALTH_FILE: /data/state/health.json
+      AUTO_NEWS_MONITOR_CARD_STORE_FILE: /data/state/cards.json
+      AUTO_NEWS_MONITOR_FORWARDED_FILE: /data/state/forwarded.json
+      AUTO_NEWS_MONITOR_LOG_DIR: /data/logs
+      # 让 docker logs 能看到；容器里不需要再写一份文件日志之外的东西
+      AUTO_NEWS_MONITOR_CONSOLE_LOG: "true"
+
+  builder:
+    build:
+      context: ../web
+    image: auto-news-builder
+    restart: always
+    user: *appuser
+    depends_on:
+      seed:
+        condition: service_completed_successfully
+    volumes:
+      - state:/data/state:ro
+      - www:/data/www
+      - ./rebuild.sh:/deploy/rebuild.sh:ro
+      - ./rebuild-loop.sh:/deploy/rebuild-loop.sh:ro
+    environment:
+      DIGEST_DIR: /data/state/digest
+      WWW_DIR: /data/www
+      APP_DIR: /app
+      REBUILD_INTERVAL_SECONDS: "3600"
+      # RSS 自引用链接用，上线前改成真实域名
+      SITE_BASE_URL: "${SITE_BASE_URL:-https://autohot.example}"
+    command: ["/bin/sh", "/deploy/rebuild-loop.sh"]
+
+  nginx:
+    image: nginx:1.27-alpine
+    restart: always
+    depends_on:
+      - builder
+    ports:
+      - "80:80"
+    volumes:
+      - www:/srv/www:ro
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+
+volumes:
+  state:
+  logs:
+  www:
