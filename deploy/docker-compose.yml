@@ -73,18 +73,32 @@ services:
       SITE_BASE_URL: "${SITE_BASE_URL:-https://autohot.example}"
     command: ["/bin/sh", "/deploy/rebuild-loop.sh"]
 
-  nginx:
-    image: nginx:1.27-alpine
+  # Caddy 同时做 TLS 终止和静态文件服务，不需要在它后面再放一层 nginx。
+  # SITE_ADDRESS 填真实域名时自动申请并续期 Let's Encrypt 证书。
+  caddy:
+    image: caddy:2-alpine
     restart: always
     depends_on:
       - builder
     ports:
       - "80:80"
+      - "443:443"
+      - "443:443/udp"   # HTTP/3
+    environment:
+      # 必须在这里给默认值：Caddy 的 {$VAR:default} 在变量「设了但为空」时
+      # 不会回落到默认值，会让 Caddyfile 行首剩一个 { 被当成全局配置块。
+      SITE_ADDRESS: "${SITE_ADDRESS:-:80}"
     volumes:
       - www:/srv/www:ro
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      # 证书和 ACME 账号必须持久化，否则每次重启都重新签发，
+      # 很快会撞上 Let's Encrypt 的速率限制
+      - caddy_data:/data
+      - caddy_config:/config
 
 volumes:
   state:
   logs:
   www:
+  caddy_data:
+  caddy_config:

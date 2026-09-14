@@ -189,7 +189,6 @@ def _build_post(key: str, name: str, item: SinaNewsItem, detail: ArticleDetail) 
         title=item.title,
         text_plain=text_plain,
         full_text=full_text,
-        text_truncated=detail.truncated,
         image_urls=[item.image_url] if item.image_url else [],
     )
 

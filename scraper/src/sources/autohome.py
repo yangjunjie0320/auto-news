@@ -267,7 +267,6 @@ def _build_post(uid: str, name: str, item: ListItem, detail: ArticleDetail) -> P
         title=item.title,
         text_plain=text_plain,
         full_text=full_text,
-        text_truncated=detail.truncated,
         image_urls=[item.image_url] if item.image_url else [],
     )
 

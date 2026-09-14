@@ -6,10 +6,10 @@
 seed     一次性：把 seed/digest 的历史数据注入 state 卷（幂等，已有数据就跳过）
 scraper  常驻：每小时轮询三个新闻站 -> DeepSeek 分类+翻译 -> 写 state/digest/*.jsonl
 builder  常驻循环：每小时跑一次 rebuild.sh，digest 没变就跳过
-nginx    发静态文件，80 端口
+caddy    发静态文件并终止 TLS，自动申请 Let's Encrypt 证书
 ```
 
-只有 scraper 是真正干活的常驻进程。builder 绝大多数时候在 sleep，nginx 只发文件。
+只有 scraper 是真正干活的常驻进程。builder 绝大多数时候在 sleep，caddy 只发文件。
 **服务器上不跑 Node 服务**——网站是构建时全量预渲染的静态文件。
 
 ## 上线前必须做的事
@@ -46,24 +46,34 @@ chmod 600 config.yaml        # --self-check 会拒绝任何带 group/other 权�
 
 `config.yaml` 已在 `.gitignore` 里，不要提交。
 
-### 3. 站点地址
+### 3. 域名与 HTTPS
 
-RSS 的自引用链接需要真实域名：
+两个环境变量，都要设：
 
 ```
-export SITE_BASE_URL=https://your-domain.com
+export SITE_ADDRESS=your-domain.com            # Caddy 用它自动申请证书
+export SITE_BASE_URL=https://your-domain.com   # RSS 自引用链接
 ```
 
-不设的话 build-data.py 会用占位域名 `https://autohot.example` 并告警。
+`SITE_ADDRESS` 填真实域名时，Caddy 会自动申请并续期 Let's Encrypt 证书、
+自动把 HTTP 跳转到 HTTPS。前提是**域名已解析到这台服务器，且 80/443 都开放**
+（ACME 的 HTTP-01 挑战走 80 端口）。不设时默认 `:80`，纯 HTTP，只适合本地验证。
+
+`SITE_BASE_URL` 不设的话 build-data.py 会用占位域名 `https://autohot.example` 并告警。
+
+证书存在 `caddy_data` 卷里，**不要删这个卷**——重建会重新签发，很快会撞上
+Let's Encrypt 的速率限制。
 
 ## 启动
 
 ```
+export SITE_ADDRESS=your-domain.com
 export SITE_BASE_URL=https://your-domain.com
 docker compose up -d
 ```
 
 首次启动顺序由 compose 保证：seed 跑完退出 → scraper 和 builder 才启动。
+首次签发证书要几十秒，`docker compose logs -f caddy` 能看到 ACME 过程。
 
 ## 验证
 
@@ -81,12 +91,16 @@ docker compose run --rm --entrypoint sh seed -c \
 # 立刻触发一次构建，不等循环
 docker compose exec builder /deploy/rebuild.sh
 
-# HTTP
+# HTTP（本地）/ HTTPS（配了域名后把 localhost 换成域名）
 curl -sI http://localhost/          # 200
-curl -sI http://localhost/daily     # 200，这是 nginx try_files 配错时最先坏的地方
+curl -sI http://localhost/daily     # 200，这是 try_files 配错时最先坏的地方
 curl -sI http://localhost/nope      # 404，不是 200
 curl -s  http://localhost/rss.xml    | xmllint --noout -   # 合法
 curl -s  http://localhost/rss.zh.xml | xmllint --noout -
+
+# 配了域名后额外验证 HTTPS 与跳转
+curl -sI http://your-domain.com/     # 308 跳 https
+curl -sI https://your-domain.com/    # 200
 ```
 
 检查 `--once` 产出的那一行：`title_en` / `summary_en` 非空、里面没有汉字、
@@ -115,8 +129,8 @@ git pull && docker compose up -d --build
 并预先 chown 好挂载点——命名卷首次创建时会继承镜像里该路径的属主，不这么做的话
 卷属 root，非 root 容器一写就 Permission denied。
 
-**`current` 软链必须是相对路径。** builder 把卷挂在 `/data/www`，nginx 挂在
-`/srv/www`。用绝对路径软链在 nginx 那边会悬空，表现是全站 404。
+**`current` 软链必须是相对路径。** builder 把卷挂在 `/data/www`，caddy 挂在
+`/srv/www`。用绝对路径软链在 caddy 那边会悬空，表现是全站 404。
 
 **rebuild.sh 靠 checksum 幂等**，所以可以放心每小时跑。任何一步失败都不动
 `current`，线上保持上一个可用版本。
@@ -124,10 +138,12 @@ git pull && docker compose up -d --build
 **digest 从不清理。** `state/digest/*.jsonl` 只追加。现在有网站读它了，
 长期要定个保留策略，否则无限增长。
 
-**没有单实例保护。** 代码里没有文件锁也没有 PID 文件。切换时务必先停掉
-mac mini 上的 launchd agent，两边同时跑会写坏 state。
+**`SITE_ADDRESS` 的默认值写在 compose 里而不是 Caddyfile 里。** Caddy 的
+`{$VAR:default}` 在变量「设了但为空」时不会回落到默认值，会让 Caddyfile 行首
+剩一个 `{` 被当成全局配置块，启动直接失败。
+
+**没有单实例保护。** 代码里没有文件锁也没有 PID 文件。两个实例同时跑会写坏 state。
 
 ## 还没做的
 
-- HTTPS：现在只监听 80。上线前套 caddy / traefik，或在 nginx 里配 certbot。
 - 备份：`state` 卷里的 digest 是不可再生的历史数据，没有备份机制。

@@ -1,0 +1,38 @@
+# SITE_ADDRESS 填真实域名（如 autohot.example.com）时，Caddy 会自动申请并续期
+# Let's Encrypt 证书、自动把 HTTP 跳转到 HTTPS。
+# 不设时默认 :80，纯 HTTP，用于本地验证。
+{$SITE_ADDRESS::80} {
+	# current 是指向 releases/<时间戳>/ 的软链，rebuild.sh 原子切换它。
+	# Caddy 每次请求都会重新解析，换链不需要 reload。
+	root * /srv/www/current
+
+	encode zstd gzip
+
+	# 带内容 hash 的产物可以永久缓存
+	@immutable path /_next/static/*
+	header @immutable Cache-Control "public, max-age=31536000, immutable"
+
+	# feed 更新频率和数据一致，给个短缓存
+	@feeds path /rss.xml /rss.zh.xml
+	header @feeds Content-Type "application/rss+xml; charset=utf-8"
+	header @feeds Cache-Control "public, max-age=900"
+
+	# HTML 文件名固定，缓存了会让用户在重新部署后仍看到旧内容
+	@html not path /_next/static/* /rss.xml /rss.zh.xml
+	header @html Cache-Control "no-cache"
+
+	# 静态导出的路由是 daily.html 而不是 daily/index.html，
+	# 没有 {path}.html 这条，访问 /daily 会 404。
+	try_files {path} {path}.html {path}/index.html
+
+	file_server
+
+	# 404 必须带真正的状态码：直接 rewrite 到 404.html 会以 200 把错误页发出去，
+	# 爬虫和 RSS 阅读器会把它当成正常页面。
+	handle_errors {
+		@notfound expression {err.status_code} == 404
+		rewrite @notfound /404.html
+		header Cache-Control "no-cache"
+		file_server
+	}
+}

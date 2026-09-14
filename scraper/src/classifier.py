@@ -216,10 +216,6 @@ def _post_text(post: Post) -> str:
     body = post.full_text.strip() or post.text_plain.strip()
     if body:
         parts.append(f"正文：\n{body}")
-    if post.is_repost and post.retweeted_text_plain:
-        parts.append(f"（转发自 @{post.retweeted_screen_name}）{post.retweeted_text_plain.strip()}")
-    if post.video and post.video.title:
-        parts.append(f"（视频：{post.video.title}）")
     text = "\n".join(p for p in parts if p)
     if len(text) <= MODEL_INPUT_MAX_CHARS:
         return text
