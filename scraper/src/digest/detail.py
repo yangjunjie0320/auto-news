@@ -18,6 +18,7 @@ import re
 import httpx
 
 from ..config import Settings
+from ..translate import translate_points
 from .events import Brief, Event
 from .llm import chat_json
 from .weibo import Discussion
@@ -44,24 +45,6 @@ DETAIL_SYSTEM_PROMPT = """你是中国汽车行业资讯编辑，为日报中的
 
 只输出 JSON：{"title": "...", "points": ["<第一条>", "<第二条>"]}"""
 
-TRANSLATE_SYSTEM_PROMPT = """你是汽车行业新闻翻译，把输入的中文要点逐条翻译成简洁的新闻英语。
-
-规则：
-- 输出条数与输入完全一致，逐条一一对应，不合并不拆分。
-- 数字、价格、日期与中文完全一致，不增删信息。
-- 品牌与车型名：确定官方英文名的用官方英文名；不确定时保留拼音或照抄
-  原名，绝不猜测、绝不替换成其他品牌的英文名。
-- 输出中不得出现任何汉字。
-
-常用官方英文名（鸿蒙智行五品牌极易混淆，严格按此对照）：
-问界=AITO，智界=LUXEED，享界=STELATO，尊界=MAEXTRO，尚界=SHANGJIE，
-鸿蒙智行=HIMA。其他常见：零跑=Leapmotor，蔚来=NIO，乐道=ONVO，
-萤火虫=firefly，小鹏=XPeng，理想=Li Auto，极氪=Zeekr，领克=Lynk & Co，
-岚图=Voyah，深蓝=Deepal，阿维塔=Avatr，埃安=Aion，昊铂=Hyptec，
-腾势=Denza，仰望=Yangwang，方程豹=Fangchengbao，极狐=Arcfox，
-智己=IM Motors，飞凡=Rising Auto，哪吒=Neta，红旗=Hongqi。
-
-只输出 JSON：{"points": ["<第一条英文>", "<第二条英文>"]}"""
 
 
 def _render_material(event: Event, discussions: list[Discussion], max_chars: int) -> str:
@@ -112,43 +95,25 @@ def _parse_detail(data: dict) -> tuple[str, list[str]]:
     return title, points
 
 
-def _parse_translation(data: dict, expected: int) -> list[str] | None:
-    """第二步输出：与中文逐条对应的英文。条数不符或混入汉字的条目作废。"""
-    raw_points = data.get("points")
-    if not isinstance(raw_points, list) or len(raw_points) != expected:
-        return None
-    result: list[str] = []
-    for item in raw_points:
-        text = " ".join(str(item).split())[: _POINT_MAX_CHARS * 2] if isinstance(item, str) else ""
-        if _CJK_RE.search(text):
-            # 漏翻的专有名词整条作废，宁缺毋滥
-            text = ""
-        result.append(text)
-    return result
-
-
 async def _translate_points(
     points: list[str],
     settings: Settings,
     http_client: httpx.AsyncClient,
 ) -> list[str]:
-    """中文要点 → 英文对照。失败返回全空串（渲染层跳过英文小节）。"""
-    listing = "\n".join(f"{i}. {point}" for i, point in enumerate(points, 1))
-    data = await chat_json(
+    """中文要点 → 英文对照。失败返回全空串（渲染层跳过英文小节）。
+
+    共享 src/translate.py 的 prompt 与校验：品牌对照表只能有一份，
+    漏改一处不会报错，只会静默出现错译的品牌名。
+    """
+    result = await translate_points(
+        points,
         settings,
         http_client,
-        TRANSLATE_SYSTEM_PROMPT,
-        listing,
         max_tokens=settings.digest_detail_max_tokens,
         timeout=settings.digest_llm_timeout,
     )
-    if data is None:
-        return [""] * len(points)
-    translated = _parse_translation(data, len(points))
-    if translated is None:
-        logger.warning("translation misaligned, keeping zh only for %d point(s)", len(points))
-        return [""] * len(points)
-    return translated
+    # 返回值与输入等长，下面 zip(strict=True) 依赖这一点
+    return [""] * len(points) if result is None else result[1]
 
 
 async def refine_features(

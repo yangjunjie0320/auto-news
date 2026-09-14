@@ -8,8 +8,8 @@ import httpx
 from src.config import Settings
 from src.digest.detail import (
     _parse_detail,
-    _parse_translation,
     _render_material,
+    _translate_points,
     refine_features,
 )
 from src.digest.events import Event
@@ -60,16 +60,31 @@ def test_parse_detail_title_and_points() -> None:
     assert points == ["中文要点一", "中文要点二"]
 
 
-def test_parse_translation_validates_count_and_cjk() -> None:
-    # 条数不符 → 整体作废
-    assert _parse_translation({"points": ["one"]}, expected=2) is None
-    assert _parse_translation({"points": "oops"}, expected=1) is None
-    # 混入汉字的条目单独作废（漏翻的专有名词宁缺毋滥），其余保留
-    result = _parse_translation(
-        {"points": ["The G9预售 exceeded 10,300 orders", "Clean English point"]},
-        expected=2,
-    )
-    assert result == ["", "Clean English point"]
+async def test_translate_points_always_returns_same_length(monkeypatch) -> None:
+    """detail.py 用 zip(points, english, strict=True) 配对中英，长度不等会抛异常。
+
+    共享的 translate.parse_translation 已经覆盖了条数校验与汉字作废本身
+    （见 tests/test_translate.py），这里只钉住 detail.py 依赖的那条契约。
+    """
+
+    async def misaligned(*args, **kwargs):
+        return {"points": ["only one"]}
+
+    async def with_cjk(*args, **kwargs):
+        return {"points": ["The G9预售 exceeded 10,300 orders", "Clean English point"]}
+
+    settings = Settings(deepseek_api_key="k")
+    async with httpx.AsyncClient() as client:
+        # 条数不符 → 整批作废，但仍返回等长空串
+        monkeypatch.setattr("src.translate.chat_json", misaligned)
+        assert await _translate_points(["一", "二"], settings, client) == ["", ""]
+
+        # 漏翻的条目单独作废，其余保留，长度不变
+        monkeypatch.setattr("src.translate.chat_json", with_cjk)
+        assert await _translate_points(["一", "二"], settings, client) == [
+            "",
+            "Clean English point",
+        ]
 
 
 def test_render_material_uses_full_text_and_weibo() -> None:

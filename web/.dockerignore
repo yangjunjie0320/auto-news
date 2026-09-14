@@ -1,0 +1,7 @@
+# 宿主机的 node_modules 是 darwin-arm64，COPY 进去会盖掉 npm ci 为 linux 装好的那份，
+# 那一层就白跑了，而且 400MB+ 白传一遍构建上下文。
+node_modules/
+.next/
+out/
+.git/
+*.tsbuildinfo

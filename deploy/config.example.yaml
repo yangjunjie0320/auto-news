@@ -1,5 +1,4 @@
-# 部署用配置模板。复制成 deploy/config.yaml 填真实值，权限设成 0600
-# （--self-check 会拒绝任何带 group/other 权限位的配置文件）。
+# 部署用配置模板。复制成 deploy/config.yaml 填真实值，权限必须 0600（理由见 README）。
 #
 # 这是「只供网站、不推飞书」的配置。字段比 scraper/config.example.yaml 少很多，
 # 因为关掉飞书后 app_id / app_secret / chat_id / 转发 / 多维表格全都不需要了。
@@ -10,9 +9,8 @@
 # 链路只剩「轮询 -> 分类翻译 -> 写 digest jsonl」。
 feishu_enabled: false
 
-# 必须为 true。它控制的是「写不写 state/digest/*.jsonl」，而这是网站的全部输入。
-# 08:00 的日报聚合另外还要求有飞书客户端，所以这里不会把它打开。
-digest_enabled: true
+# 把每条文章落进 state/digest/*.jsonl。这是网站的全部输入，必须开。
+digest_archive_enabled: true
 
 # 唯一必需的密钥。关飞书后网站是唯一出口，分类没跑等于产出空标签，
 # --self-check 会挡住缺 key 的情况。

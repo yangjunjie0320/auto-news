@@ -10,22 +10,23 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends python3 ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /app
-
-COPY package.json package-lock.json ./
-RUN npm ci
-
-COPY . .
-
-ENV NODE_ENV=production
-
-# 预建属主正确的挂载点，理由同 scraper/Dockerfile。
-# /app 也要给写权限：build-data.py 写 src/data/news.json 和 public/*.xml，
-# next build 写 .next/ 和 out/。
+# 先建用户和挂载点，再以该用户身份装依赖和拷源码。
+# 顺序很重要：如果放到 COPY 之后再 chown -R /app，递归改属主会重写每个文件的
+# 元数据，Docker 得把整个 /app（含 400MB+ node_modules）物化成又一层。
 RUN groupadd -g 10001 app \
     && useradd -u 10001 -g 10001 -m -s /usr/sbin/nologin app \
-    && mkdir -p /data/www \
+    && mkdir -p /data/www /app \
     && chown -R 10001:10001 /data /app
+
+USER 10001:10001
+WORKDIR /app
+
+COPY --chown=10001:10001 package.json package-lock.json ./
+RUN npm ci
+
+COPY --chown=10001:10001 . .
+
+ENV NODE_ENV=production
 
 # 循环体在 deploy/rebuild-loop.sh 里，由 compose 挂进来并作为 command
 CMD ["node", "--version"]

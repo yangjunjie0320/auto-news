@@ -51,11 +51,10 @@ log "已切换到 releases/$stamp_name"
 
 echo "$sha" > "$STAMP"
 
-# 旧版本只留最近几个
-cd "$WWW_DIR/releases"
-ls -1 | sort -r | tail -n +$((KEEP_RELEASES + 1)) | while read -r old; do
+# 旧版本只留最近几个。目录名是 UTC 时间戳，ls -1r 就是倒序，不用再接 sort。
+ls -1r "$WWW_DIR/releases" | tail -n +$((KEEP_RELEASES + 1)) | while read -r old; do
   log "清理旧版本 $old"
-  rm -rf "$old"
+  rm -rf "${WWW_DIR:?}/releases/$old"
 done
 
 log "完成"

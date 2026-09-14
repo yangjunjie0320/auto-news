@@ -50,10 +50,8 @@ log_dir: logs
 # 挂载到事件下或聚成新事件。事件二分：详讯（有网站文章或多条微博）与
 # 短讯（单条微博 + 散装观点）。卡片放详讯的标题+中文缩写；英文对照、
 # 图片、原文进飞书文档，默认折叠。
-# 注意：digest_enabled 控制的是「写不写 state/digest/*.jsonl」，网站的全部输入就是它，
-# 只给网站供数据时必须设成 true。08:00 的日报聚合另外还要求有飞书客户端，
-# 所以 feishu_enabled: false 时它不会启动。
-digest_enabled: false
+digest_archive_enabled: false    # 把文章落进 state/digest/*.jsonl（网站的输入，与飞书无关）
+digest_report_enabled: false     # 08:00 飞书日报（需要飞书客户端）
 digest_send_time: "08:00"        # 北京时间，覆盖前一自然日
 digest_pool_enabled: true        # 账号池（pool.yaml，沿用 weibo-monitor 的清单）
 digest_pool_file: "pool.yaml"

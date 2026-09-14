@@ -19,18 +19,8 @@ services:
     volumes:
       - state:/data/state
       - ../seed:/seed:ro
-    command:
-      - /bin/sh
-      - -c
-      - |
-        set -eu
-        mkdir -p /data/state/digest
-        if [ -n "$$(ls -A /data/state/digest 2>/dev/null)" ]; then
-          echo "[seed] digest 已有数据，跳过"
-        else
-          cp /seed/digest/*.jsonl /data/state/digest/
-          echo "[seed] 注入 $$(ls -1 /data/state/digest | wc -l) 个文件"
-        fi
+      - ./seed.sh:/deploy/seed.sh:ro
+    command: ["/bin/sh", "/deploy/seed.sh"]
 
   scraper:
     build:
@@ -44,8 +34,7 @@ services:
     volumes:
       - state:/data/state
       - logs:/data/logs
-      # config.yaml 里有 deepseek_api_key，宿主机上权限要是 0600：
-      # --self-check 会拒绝任何带 group/other 权限位的配置文件
+      # 权限必须 0600，理由见 README
       - ./config.yaml:/config/config.yaml:ro
     environment:
       # Settings 的路径字段都是相对 CWD 的，这里全部指到挂载卷。

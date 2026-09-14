@@ -26,7 +26,7 @@ class SendError(Exception):
 
 
 class CardSender:
-    def __init__(self, settings: Settings, client: lark.Client) -> None:
+    def __init__(self, settings: Settings, client: lark.Client | None) -> None:
         self._settings = settings
         self._client = client
 
@@ -70,12 +70,15 @@ class CardSender:
 
 
 class PostPusher:
-    """单条新帖的推送流水线：传首图（尽力）→ 组卡片 → 发送。"""
+    """单条新帖的处理流水线：分类 → 归档进 digest →（飞书开着时）组卡片发送。
+
+    关掉飞书时只走到归档为止，digest 就是网站的全部输入。
+    """
 
     def __init__(
         self,
         settings: Settings,
-        lark_client: lark.Client,
+        lark_client: lark.Client | None,
         http_client: httpx.AsyncClient,
         *,
         card_store: CardStore | None = None,
@@ -91,6 +94,17 @@ class PostPusher:
         self._card_store = card_store
         self._digest_store = digest_store
         self._dry_run = dry_run
+
+    async def _archive(self, post: Post, result) -> None:
+        """落 digest 供网站消费。
+
+        三个调用点各自保留，不要合并成「分类后统一归档一次」：
+        最后那个故意放在飞书发送成功之后，因为 append 不去重、build-data.py 的
+        load_rows 也不按 mid 去重，发送失败重试会写出重复行、网站上出现重复条目。
+        要合并得先让 append 幂等。
+        """
+        if self._digest_store is not None and not self._dry_run:
+            self._digest_store.append(await self._digest_record(post, result))
 
     async def _digest_record(self, post: Post, result) -> DigestRecord:
         title = result.headline or post.title or post.text_plain[:60]
@@ -136,15 +150,13 @@ class PostPusher:
                 result.label,
                 post.url,
             )
-            if self._digest_store is not None and not self._dry_run:
-                self._digest_store.append(await self._digest_record(post, result))
+            await self._archive(post, result)
             return PushResult.processed()
 
         # 关掉飞书时链路到此为止：只落 digest 供网站消费，不组卡片不发送。
         # 注意不要挪到 promo 分支之前——promo 的判定与日志仍然有意义。
         if not self._settings.feishu_enabled:
-            if self._digest_store is not None and not self._dry_run:
-                self._digest_store.append(await self._digest_record(post, result))
+            await self._archive(post, result)
             logger.info(
                 "post archived (feishu off): name=%s mid=%s label=%s url=%s",
                 post.screen_name,
@@ -200,6 +212,5 @@ class PostPusher:
                     "post_created_at": post.created_at.isoformat(timespec="seconds"),
                 },
             )
-        if self._digest_store is not None:
-            self._digest_store.append(await self._digest_record(post, result))
+        await self._archive(post, result)
         return PushResult.sent()

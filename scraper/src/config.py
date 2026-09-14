@@ -80,15 +80,19 @@ class Settings(BaseSettings):
     classify_timeout: float = Field(default=15.0, gt=0)
 
     # 逐条中译英，结果写进 digest 的 title_en/summary_en 供英文站与英文 RSS 使用。
-    # 分类之后单独调一次，不与分类合并：混在一次调用里会漏翻专有名词、串品牌名
-    # （2026-08-07 实测把「享界」翻成 AITO），详见 src/digest/detail.py 模块注释。
+    # 为什么要单独调一次而不与分类合并，见 src/translate.py 模块注释。
     translate_enabled: bool = True
     translate_max_tokens: int = Field(default=4000, gt=0)
     translate_timeout: float = Field(default=30.0, gt=0)
 
-    # 日报聚合：网站新闻聚成事件，每个事件下挂微博讨论
-    digest_enabled: bool = False
+    # 归档：把每条推送过的文章落进 state/digest/*.jsonl。
+    # 这是网站的全部输入，只给网站供数据时必须开。与飞书无关。
+    digest_archive_enabled: bool = False
     digest_dir: str = "state/digest"
+
+    # 08:00 飞书日报：把归档的素材聚成事件、渲染卡片、写飞书文档。
+    # 需要飞书客户端，关掉飞书时不会启动。与网站无关。
+    digest_report_enabled: bool = False
     digest_state_file: str = "state/digest.json"
     # 发送前整副卡片落盘；部分发送失败后重试从断点续发，防止重复卡片
     digest_outbox_file: str = "state/digest_outbox.json"

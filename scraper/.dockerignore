@@ -1,0 +1,13 @@
+# 宿主机的 venv 是 macOS 二进制，COPY 进去会盖掉镜像里刚建好的那份，
+# 导致依赖层每次构建都作废，而且 169MB 白传一遍构建上下文。
+# Docker 不读 .gitignore，这份必须单独存在。
+.venv/
+.git/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+state/
+logs/
+config.yaml
+.env

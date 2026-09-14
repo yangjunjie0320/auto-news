@@ -17,18 +17,14 @@ import urllib.request
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
 from email.utils import format_datetime
+from pathlib import Path
 from xml.sax.saxutils import escape as xml_escape
 
 logger = logging.getLogger(__name__)
 
 # 单仓库内的相对路径，不再依赖某台机器上的绝对路径。
 # 容器里用 --source 指到挂载的 state volume。
-DEFAULT_SOURCE = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-    "scraper",
-    "state",
-    "digest",
-)
+DEFAULT_SOURCE = str(Path(__file__).resolve().parents[2] / "scraper" / "state" / "digest")
 DEFAULT_OUT = "src/data/news.json"
 DEFAULT_TRANSLATIONS = "src/data/translations.en.json"
 DEFAULT_BRANDS = "src/data/brands.json"
@@ -180,12 +176,41 @@ def load_rows(source_dir: str) -> list[dict]:
 
 CJK_RE = re.compile(r"[一-鿿]")
 
+# 「¥12,000 units」这种把数量写成金额的错误。Money.tsx 只按 ¥ 认金额，会把它
+# 换算成美元，页面上出现无意义的「$1,780 units」且没有任何报错。
+#
+# 这段与 scraper/src/translate.py 的同名函数重复，但那是必要的：build-data.py
+# 是纯标准库脚本、跑在不含 scraper 源码的镜像里，import 不到。更重要的是人工维护的
+# translations.en.json 根本不经过 scraper，这里才是人工与机翻两路唯一的汇合点。
+_UNIT_WORDS = r"(?:units?|vehicles?|cars?|deliveries|orders?|sales)"
+MONEY_UNIT_RE = re.compile(rf"¥([\d,]+(?:\.\d+)?)(\s*{_UNIT_WORDS}\b)", re.IGNORECASE)
+
+
+def split_points(summary: str) -> list[str]:
+    """digest 的 summary 是「- 要点」多行字符串，拆回列表。"""
+    return [
+        line.lstrip("- ").strip()
+        for line in summary.splitlines()
+        if line.strip().startswith("-")
+    ]
+
+
+def fix_money_units(text: str) -> str:
+    """把「¥12,000 units」修成「12,000 units」。数量单位词前的 ¥ 一定是错的。"""
+    fixed = MONEY_UNIT_RE.sub(lambda m: f"{m.group(1)}{m.group(2)}", text)
+    if fixed != text:
+        logger.warning("数量误带货币符号，已修正：%s", text[:80])
+    return fixed
+
 
 def _usable_english(title: str, points: list[str]) -> tuple[str, list[str]] | None:
     """英文必须成套且确实是英文，否则宁可整条回退中文。
 
     半中半英比纯中文更糟：页面上一半是英文一半是汉字，而且 translated 标记会
     骗过 /about 页的未翻译计数，让它失去质量指标的意义。
+
+    通过校验后统一修一遍金额写法——人工翻译不经过 scraper 的任何检查，
+    这里是它唯一的防线。
     """
     if not isinstance(title, str) or not title.strip():
         return None
@@ -195,7 +220,7 @@ def _usable_english(title: str, points: list[str]) -> tuple[str, list[str]] | No
         return None
     if CJK_RE.search(title) or any(CJK_RE.search(p) for p in points):
         return None
-    return title, points
+    return fix_money_units(title), [fix_money_units(p) for p in points]
 
 
 def _pick_english(row: dict, translations: dict) -> tuple[str, list[str]] | None:
@@ -207,32 +232,22 @@ def _pick_english(row: dict, translations: dict) -> tuple[str, list[str]] | None
             return picked
         logger.warning("manual translation unusable, falling through: mid=%s", row["mid"])
 
-    machine_points = [
-        p.lstrip("- ").strip()
-        for p in row.get("summary_en", "").splitlines()
-        if p.strip().startswith("-")
-    ]
-    return _usable_english(row.get("title_en", ""), machine_points)
+    return _usable_english(
+        row.get("title_en", ""), split_points(row.get("summary_en", ""))
+    )
 
 
 def transform(row: dict, translations: dict) -> dict:
     created = datetime.fromisoformat(row["created_at"].replace("Z", "+00:00"))
     local = created.astimezone(CST)
     meta = LABEL_META.get(row["label"], FALLBACK_LABEL)
-    points = [
-        p.lstrip("- ").strip()
-        for p in row["summary"].splitlines()
-        if p.strip().startswith("-")
-    ]
 
     # 英文三级优先：人工覆盖 > 抓取端机翻 > 回退中文并标记，供前端提示。
     # 人工排第一是为了能手工修正机翻而不必改抓取端；抓取端上线前的历史条目
     # 也只有人工翻译这一份。
     english = _pick_english(row, translations)
     translated = english is not None
-    title = english[0] if translated else row["title"]
-    if translated:
-        points = english[1]
+    title, points = english if translated else (row["title"], split_points(row["summary"]))
 
     site = row["source"].split("·")[0]
     return {
@@ -304,17 +319,16 @@ def _rss_description(points: list[str]) -> str:
 def build_feed(
     entries: list[dict],
     *,
-    lang: str,
+    meta: dict,
     base_url: str,
     generated_at: datetime,
 ) -> bytes:
-    meta = FEED_META[lang]
-    feed_url = f"{base_url.rstrip('/')}/{meta['path']}"
+    base = base_url.rstrip("/")
 
     rss = ET.Element("rss", {"version": "2.0", "xmlns:atom": ATOM_NS})
     channel = ET.SubElement(rss, "channel")
     ET.SubElement(channel, "title").text = meta["title"]
-    ET.SubElement(channel, "link").text = base_url.rstrip("/") + "/"
+    ET.SubElement(channel, "link").text = base + "/"
     ET.SubElement(channel, "description").text = meta["description"]
     ET.SubElement(channel, "language").text = meta["language"]
     ET.SubElement(channel, "lastBuildDate").text = format_datetime(
@@ -323,7 +337,7 @@ def build_feed(
     ET.SubElement(
         channel,
         "atom:link",
-        {"href": feed_url, "rel": "self", "type": "application/rss+xml"},
+        {"href": f"{base}/{meta['path']}", "rel": "self", "type": "application/rss+xml"},
     )
 
     for entry in entries[:RSS_ITEM_LIMIT]:
@@ -356,33 +370,27 @@ def write_feeds(
     不静默丢条目）。中文直接取原始 digest 行，因此不依赖翻译链路——
     DeepSeek 挂了中文 feed 照常完整发布。
     """
-    zh_entries = []
-    for it in items:
-        row = rows_by_mid.get(it["id"])
-        if row is None:
-            continue
-        zh_entries.append(
-            {
-                "id": it["id"],
-                "title": row["title"],
-                "points": [
-                    p.lstrip("- ").strip()
-                    for p in row.get("summary", "").splitlines()
-                    if p.strip().startswith("-")
-                ],
-                "label": row.get("label", ""),
-                "url": it["url"],
-                "publishedAt": it["publishedAt"],
-            }
-        )
+    # 中文条目就是英文条目换掉三个语言相关字段。用 {**it} 而不是重列字段，
+    # 这样以后 build_feed 多读一个字段时中文 feed 会自动跟上。
+    # items 本就由 rows 逐条 transform 而来，rows_by_mid[it["id"]] 必定存在。
+    zh_entries = [
+        {
+            **it,
+            "title": rows_by_mid[it["id"]]["title"],
+            "points": split_points(rows_by_mid[it["id"]].get("summary", "")),
+            "label": rows_by_mid[it["id"]].get("label", ""),
+        }
+        for it in items[:RSS_ITEM_LIMIT]
+    ]
 
     os.makedirs(public_dir, exist_ok=True)
     for lang, entries in (("en", items), ("zh", zh_entries)):
-        path = os.path.join(public_dir, FEED_META[lang]["path"])
+        meta = FEED_META[lang]
+        path = os.path.join(public_dir, meta["path"])
         with open(path, "wb") as fh:
             fh.write(
                 build_feed(
-                    entries, lang=lang, base_url=base_url, generated_at=generated_at
+                    entries, meta=meta, base_url=base_url, generated_at=generated_at
                 )
             )
         logger.info("写出 %d 条到 %s", min(len(entries), RSS_ITEM_LIMIT), path)

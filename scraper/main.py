@@ -87,11 +87,15 @@ async def _run(settings: Settings, *, once: bool, dry_run: bool) -> None:
         lark_client = build_lark_client(settings)
 
     async with httpx.AsyncClient() as http_client:
-        forward_on = settings.forward_enabled and lark_client is not None
+        # 「配置里开了飞书」和「本次运行真的能发」是两回事，各命名一次，全文只用这两个：
+        # dry-run 时 settings.feishu_enabled 为真而 live_feishu 为假——卡片照常组装
+        # 以便验证，只是不发出去。
+        live_feishu = lark_client is not None
+        forward_on = settings.forward_enabled and live_feishu
         card_store = CardStore(settings.card_store_file) if forward_on else None
         digest_store = (
             DigestStore(settings.digest_dir)
-            if settings.digest_enabled and not dry_run
+            if settings.digest_archive_enabled and not dry_run
             else None
         )
 
@@ -111,13 +115,14 @@ async def _run(settings: Settings, *, once: bool, dry_run: bool) -> None:
 
         logger.info(
             "auto-news-monitor started: sources=%d interval=%ds dry_run=%s "
-            "feishu=%s forward=%s digest=%s translate=%s",
+            "feishu=%s forward=%s archive=%s report=%s translate=%s",
             len(fetchers),
             settings.poll_interval_seconds,
             dry_run,
             settings.feishu_enabled,
             forward_on,
             digest_store is not None,
+            settings.digest_report_enabled and live_feishu,
             settings.translate_enabled and bool(settings.deepseek_api_key),
         )
         if once:
@@ -141,7 +146,7 @@ async def _run(settings: Settings, *, once: bool, dry_run: bool) -> None:
                 )
             else:
                 logger.warning("forward enabled but bitable_url not set, archive stays local")
-        if settings.digest_enabled and lark_client is not None:
+        if settings.digest_report_enabled and live_feishu:
             scheduler = DigestScheduler(settings, lark_client, http_client)
             side_tasks.append(
                 asyncio.create_task(scheduler.run_forever(), name="digest-scheduler")
@@ -183,7 +188,7 @@ def _self_check(settings: Settings, config_path: str | Path | None = None) -> No
     checked = [settings.state_file, settings.health_file]
     if settings.feishu_enabled:
         checked += [settings.card_store_file, settings.forwarded_file]
-    if settings.digest_enabled:
+    if settings.digest_report_enabled:
         checked.append(settings.digest_state_file)
     for raw_path in checked:
         path = Path(raw_path)
@@ -193,7 +198,7 @@ def _self_check(settings: Settings, config_path: str | Path | None = None) -> No
         if not parent.exists() or not os.access(parent, os.W_OK):
             raise RuntimeError(f"state directory is not writable: {parent}")
 
-    if settings.digest_enabled:
+    if settings.digest_archive_enabled:
         # 网站的全部输入落在 digest_dir，而 DigestStore.append 把 OSError 吞掉只记日志，
         # 权限不对是完全静默的，所以这里必须挡住。目录可能还没建（append 会自己建），
         # 那就检查最近的已存在祖先。
