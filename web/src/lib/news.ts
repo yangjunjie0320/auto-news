@@ -6,6 +6,17 @@ export interface NewsItem {
   id: string;
   /** 来源类型：新闻站文章还是微博观点。旧数据没有这个字段时按 "web" 处理 */
   kind: "web" | "weibo";
+  /**
+   * 翻译环节挑出的关键数字（含单位）。**目前没有界面消费它。**
+   *
+   * 原本想在卡片上单独列一行做扫读锚点，实测否决了：47/76 的标题本来就以
+   * 数字开头（数字就是新闻本身），单独再列一次是同一个数字隔几个词出现两遍。
+   * 真正让数字突出的是等宽数字排版，那个已经在正文里生效了。
+   *
+   * 字段保留是因为它搭在同一次 LLM 调用里、不额外花钱，以后做对比视图
+   * 或数据页时能直接用。
+   */
+  figure: string;
   title: string;
   points: string[];
   label: string;
@@ -136,7 +147,8 @@ export function formatWeekday(date: string): string {
 
 /** "2026-08-01" -> "Aug 1 · Sat" */
 export function formatDateLabel(date: string): string {
-  return `${formatDateShort(date)} · ${formatWeekday(date)}`;
+  // 写成自然的日期，不用中点串联两个片段
+  return `${formatWeekday(date)}, ${formatDateShort(date)}`;
 }
 
 /** 相对最新快照日期的自然语言天数。 */

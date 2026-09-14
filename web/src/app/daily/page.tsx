@@ -24,7 +24,7 @@ export default function DailyPage() {
       <div className={styles.hero}>
         <h1 className={styles.h1}>Daily Digest</h1>
         <p className={styles.sub}>
-          {days.length} issues · {allItems.length} items
+          {allItems.length} items across {days.length} days
         </p>
       </div>
 
@@ -35,8 +35,8 @@ export default function DailyPage() {
             <header className={styles.dayHead}>
               <h2 className={styles.dayTitle}>{formatDateLabel(date)}</h2>
               <span className={styles.dayMeta}>
-                {relativeDay(date)} ·{" "}
-                {items.length === 1 ? "1 item" : `${items.length} items`}
+                {items.length === 1 ? "1 item" : `${items.length} items`},{" "}
+                {relativeDay(date).toLowerCase()}
               </span>
             </header>
 

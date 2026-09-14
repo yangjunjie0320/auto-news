@@ -43,7 +43,7 @@ def test_parse_translation_rejects_count_mismatch():
 
 
 def test_parse_translation_blanks_cjk_residue():
-    title, points = parse_translation(
+    title, _figure, points = parse_translation(
         {"title": "Leapmotor delivers", "points": ["fine", "享界 G9 launched"]}, 2
     )
     assert title == "Leapmotor delivers"
@@ -52,20 +52,20 @@ def test_parse_translation_blanks_cjk_residue():
 
 
 def test_parse_translation_fixes_money_units():
-    _, points = parse_translation({"title": "T", "points": ["¥12,000 units"]}, 1)
+    _, _figure, points = parse_translation({"title": "T", "points": ["¥12,000 units"]}, 1)
     assert points == ["12,000 units"]
 
 
 async def test_translate_article_disabled_returns_empty():
     settings = Settings(translate_enabled=False, deepseek_api_key="k")
     async with httpx.AsyncClient() as client:
-        assert await translate_article("标题", "- 要点", settings, client) == ("", "")
+        assert await translate_article("标题", "- 要点", settings, client) == ("", "", "")
 
 
 async def test_translate_article_without_key_returns_empty():
     settings = Settings(translate_enabled=True, deepseek_api_key="")
     async with httpx.AsyncClient() as client:
-        assert await translate_article("标题", "- 要点", settings, client) == ("", "")
+        assert await translate_article("标题", "- 要点", settings, client) == ("", "", "")
 
 
 async def test_translate_article_happy_path(monkeypatch):
@@ -74,22 +74,29 @@ async def test_translate_article_happy_path(monkeypatch):
     async def fake_chat_json(settings, client, system, user, *, max_tokens, timeout):
         captured["system"] = system
         captured["user"] = user
-        return {"title": "Leapmotor July deliveries hit 101,267", "points": ["A", "B"]}
+        return {
+            "title": "Leapmotor July deliveries hit 101,267",
+            "figure": "101,267 units",
+            "points": ["A", "B"],
+        }
 
     monkeypatch.setattr("src.translate.chat_json", fake_chat_json)
     settings = Settings(translate_enabled=True, deepseek_api_key="k")
     async with httpx.AsyncClient() as client:
-        title_en, summary_en = await translate_article(
+        title_en, summary_en, figure_en = await translate_article(
             "零跑7月交付101267台", "- 第一条\n- 第二条", settings, client
         )
     assert title_en == "Leapmotor July deliveries hit 101,267"
     assert summary_en == "- A\n- B"
+    assert figure_en == "101,267 units"
     # 标题和要点一起送进同一次翻译调用
     assert "标题：零跑7月交付101267台" in captured["user"]
     assert "1. 第一条" in captured["user"]
     # ¥ 规则必须在 prompt 里，违反是静默的
     assert "¥380,000" in captured["system"]
     assert "12,000 units" in captured["system"]
+    # figure 的挑选优先级也要在 prompt 里
+    assert "figure" in captured["system"]
 
 
 async def test_translate_article_degrades_on_llm_failure(monkeypatch):
@@ -99,7 +106,7 @@ async def test_translate_article_degrades_on_llm_failure(monkeypatch):
     monkeypatch.setattr("src.translate.chat_json", fake_chat_json)
     settings = Settings(translate_enabled=True, deepseek_api_key="k")
     async with httpx.AsyncClient() as client:
-        assert await translate_article("标题", "- 要点", settings, client) == ("", "")
+        assert await translate_article("标题", "- 要点", settings, client) == ("", "", "")
 
 
 async def test_translate_article_degrades_on_misalignment(monkeypatch):
@@ -110,4 +117,32 @@ async def test_translate_article_degrades_on_misalignment(monkeypatch):
     settings = Settings(translate_enabled=True, deepseek_api_key="k")
     async with httpx.AsyncClient() as client:
         # 两条中文要点对一条英文，整批作废
-        assert await translate_article("标题", "- 一\n- 二", settings, client) == ("", "")
+        assert await translate_article("标题", "- 一\n- 二", settings, client) == ("", "", "")
+
+
+def test_figure_without_digit_is_dropped():
+    """不含数字的「关键数字」是模型在凑，丢掉好过在卡片上显示一句废话。"""
+    _title, figure, _points = parse_translation(
+        {"title": "T", "figure": "record high", "points": ["a"]}, 1
+    )
+    assert figure == ""
+
+
+def test_figure_is_cleaned_and_capped():
+    _title, figure, _points = parse_translation(
+        {"title": "T", "figure": "  13,189   vehicles  ", "points": ["a"]}, 1
+    )
+    assert figure == "13,189 vehicles"
+
+
+def test_missing_figure_is_empty_not_error():
+    """figure 是软字段：模型没给也不能让整批翻译作废。"""
+    title, figure, points = parse_translation({"title": "T", "points": ["a"]}, 1)
+    assert (title, figure, points) == ("T", "", ["a"])
+
+
+def test_figure_money_units_are_fixed_too():
+    _title, figure, _points = parse_translation(
+        {"title": "T", "figure": "¥12,000 units", "points": ["a"]}, 1
+    )
+    assert figure == "12,000 units"

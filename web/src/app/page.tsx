@@ -21,7 +21,7 @@ export default function HomePage() {
       <div className={styles.hero}>
         <h1 className={styles.h1}>Featured</h1>
         <p className={styles.sub}>
-          {formatDateLabel(latestDate)} · Today&rsquo;s highlights
+          {formatDateLabel(latestDate)}
         </p>
       </div>
 

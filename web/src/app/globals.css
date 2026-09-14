@@ -30,12 +30,14 @@
   --shadow-card: none;
   --shadow-card-hover: 0 8px 24px rgba(0, 0, 0, 0.4);
 
-  /* accent：rose=刹车灯橙红（热点）cyan=电动蓝（新车）emerald=新能源绿（销量）amber=琥珀 */
-  --accent-rose: #e2603f;
+  /* accent 按分类编码信息，不是装饰：
+     rose=热点与出海 cyan=产品线 emerald=数字与资本 amber=政策与分析
+     rose 用高饱和信号红（刹车灯亮起的那一下），而不是低饱和陶土色 */
+  --accent-rose: #ff4d2e;
   --accent-cyan: #4a9ec9;
   --accent-emerald: #5fc79a;
   --accent-amber: #d9b46a;
-  --accent-rose-fg: #ee7a58;
+  --accent-rose-fg: #ff6a4f;
   --accent-cyan-fg: #6fb4d9;
   --accent-emerald-fg: #5fc79a;
   --accent-amber-fg: #d9b46a;
@@ -98,11 +100,13 @@
 }
 
 :root {
+  /* 字体由 layout.tsx 的 next/font 注入，自托管，不依赖外部 CDN。
+     后面的系统栈是加载失败时的兜底，也负责 CJK 字形。 */
   --font-body:
-    system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
-    "Hiragino Sans GB", "HarmonyOS Sans SC", "Microsoft YaHei", sans-serif;
+    var(--font-plex-sans), system-ui, -apple-system, "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
   --font-mono:
-    ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, monospace;
+    var(--font-plex-mono), ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
   --radius-sm: 8px;
   --radius: 12px;

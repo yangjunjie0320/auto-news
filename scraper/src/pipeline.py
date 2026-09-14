@@ -36,7 +36,7 @@ class ArticlePipeline:
         title = result.headline or post.title or post.text_plain[:60]
         summary = result.summary.strip()
         # 翻译是软依赖：失败只是没有英文，中文字段照常完整，中文 RSS 不受影响
-        title_en, summary_en = await translate_article(
+        title_en, summary_en, figure_en = await translate_article(
             title, summary, self._settings, self._http_client
         )
         return DigestRecord(
@@ -52,6 +52,7 @@ class ArticlePipeline:
             image_urls=list(post.image_urls),
             title_en=title_en,
             summary_en=summary_en,
+            figure_en=figure_en,
         )
 
     async def process(self, post: Post) -> PushResult:

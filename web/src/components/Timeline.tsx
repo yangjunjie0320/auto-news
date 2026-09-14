@@ -1,5 +1,5 @@
 import type { NewsItem } from "@/lib/news";
-import { formatDateShort, formatWeekday, relativeDay } from "@/lib/news";
+import { formatDateShort } from "@/lib/news";
 import NewsCard from "./NewsCard";
 import styles from "./Timeline.module.css";
 
@@ -17,7 +17,6 @@ export default function Timeline({
             <h3 className={styles.date}>{formatDateShort(date)}</h3>
             <span className={styles.railCell} aria-hidden="true" />
             <p className={styles.dayMeta}>
-              {formatWeekday(date)} · {relativeDay(date)} ·{" "}
               {items.length === 1 ? "1 item" : `${items.length} items`}
             </p>
           </header>

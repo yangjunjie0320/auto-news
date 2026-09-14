@@ -38,6 +38,9 @@ class DigestRecord(BaseModel):
     # 翻译失败时留空，网站端会回退中文并标记 translated=false。
     title_en: str = ""
     summary_en: str = ""
+    # 这条新闻最关键的一个数字（含单位），网站用它做列表的扫读锚点。
+    # 软字段：缺了卡片照常渲染，只是没有前置数字。
+    figure_en: str = ""
 
 
 def cn_date(moment: dt.datetime) -> dt.date:

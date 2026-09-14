@@ -19,7 +19,7 @@ class _ArchiveStub:
 
 def _no_translate(monkeypatch):
     async def fake_translate(title, summary, settings, client):
-        return "", ""
+        return "", "", ""
 
     monkeypatch.setattr("src.pipeline.translate_article", fake_translate)
 
@@ -83,7 +83,11 @@ async def test_translation_lands_beside_chinese(monkeypatch):
         )
 
     async def fake_translate(title, summary, settings, client):
-        return "Leapmotor July deliveries hit 101,267", "- English point"
+        return (
+            "Leapmotor July deliveries hit 101,267",
+            "- English point",
+            "101,267 units",
+        )
 
     monkeypatch.setattr("src.pipeline.classify_post", fake_classify)
     monkeypatch.setattr("src.pipeline.translate_article", fake_translate)
@@ -99,6 +103,8 @@ async def test_translation_lands_beside_chinese(monkeypatch):
     assert record.summary == "- 中文要点"
     assert record.title_en == "Leapmotor July deliveries hit 101,267"
     assert record.summary_en == "- English point"
+    # 扫读锚点，网站把它前置到标题左边
+    assert record.figure_en == "101,267 units"
 
 
 async def test_translation_failure_leaves_chinese_intact(monkeypatch):
@@ -116,5 +122,6 @@ async def test_translation_failure_leaves_chinese_intact(monkeypatch):
     record = archive.records[0]
     assert record.title_en == ""
     assert record.summary_en == ""
+    assert record.figure_en == ""
     # 翻译挂掉不影响中文，中文 RSS 照常
     assert record.title == "某车型上市"

@@ -63,9 +63,9 @@ export default function Feed({ items, labels, brands, children }: Props) {
   const tabs = [{ name: "All", slug: "all" }, ...labels];
   const hasWeibo = useMemo(() => items.some((it) => it.kind === "weibo"), [items]);
   const kinds = [
-    { name: "All sources", slug: "all" as const },
-    { name: "News", slug: "web" as const },
-    { name: "Weibo", slug: "weibo" as const },
+    { name: "Everything", slug: "all" as const },
+    { name: "Reported", slug: "web" as const },
+    { name: "Observed", slug: "weibo" as const },
   ];
   const activeBrand = brand ? brands.find((b) => b.slug === brand) : null;
 
@@ -86,14 +86,16 @@ export default function Feed({ items, labels, brands, children }: Props) {
       />
 
       <div className={styles.bar}>
+        {/* 来源用下划线标签，分类用填充药丸：形状不同，读者一眼能分出这是两种筛选。
+            都做成同样的药丸会让人分不清哪排管什么。 */}
         {hasWeibo && (
-          <div className={styles.tabs} role="tablist" aria-label="Source type">
+          <div className={styles.scopes} role="tablist" aria-label="Source type">
             {kinds.map((k) => (
               <button
                 key={k.slug}
                 role="tab"
                 aria-selected={kind === k.slug}
-                className={styles.tab}
+                className={styles.scope}
                 data-active={kind === k.slug}
                 onClick={() => {
                   setKind(k.slug);
@@ -106,7 +108,7 @@ export default function Feed({ items, labels, brands, children }: Props) {
                 }}
               >
                 {k.name}
-                <span className={styles.count}>
+                <span className={styles.scopeCount}>
                   {k.slug === "all"
                     ? items.length
                     : items.filter((it) => it.kind === k.slug).length}

@@ -16,7 +16,7 @@ export default function RankingPage() {
     <div className={`container ${styles.page}`}>
       <div className={styles.hero}>
         <h1 className={styles.h1}>Trending</h1>
-        <p className={styles.sub}>Ranked by heat score · top {ranked.length}</p>
+        <p className={styles.sub}>Top {ranked.length} by heat score</p>
       </div>
 
       <ol className={styles.list}>

@@ -67,12 +67,12 @@
   color: var(--text-0);
 }
 
-/* 文字 wordmark：靠字重和字间距做识别度，等真 logo 放进来后替换 */
+/* 文字 wordmark：等真 logo 放进来后替换。
+   不做 uppercase —— brands.json 里写的就是各品牌自己的写法
+   （BYD、MG 本来全大写，Chery、Geely、Leapmotor 本来不是），强制转换反而失真。 */
 .wordmark {
   font-size: var(--text-size-sm);
-  font-weight: 700;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
+  font-weight: 600;
 }
 
 /* 国际品牌弱一档，让中国品牌在视觉上先被看到 */

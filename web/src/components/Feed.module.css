@@ -165,3 +165,48 @@
   background: var(--surface-2);
   color: var(--text-0);
 }
+
+/* 来源作用域：下划线标签。和分类的填充药丸形状不同，是为了让读者一眼分出
+   这是两种不同的筛选——之前两排都是红底药丸，分不清哪排管什么。 */
+.scopes {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-4);
+  margin-bottom: var(--space-2);
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.scope {
+  padding: 0 0 7px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: none;
+  color: var(--text-2);
+  font: inherit;
+  font-size: var(--text-size-sm);
+  cursor: pointer;
+  transition: color var(--dur-fast) ease;
+}
+
+.scope:hover {
+  color: var(--text-1);
+}
+
+.scope[data-active="true"] {
+  border-bottom-color: var(--accent-rose);
+  color: var(--text-0);
+  font-weight: 600;
+}
+
+.scopeCount {
+  margin-left: 5px;
+  font-family: var(--font-mono);
+  font-size: var(--text-size-xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-3);
+}
+
+.scope[data-active="true"] .scopeCount {
+  color: var(--text-2);
+}

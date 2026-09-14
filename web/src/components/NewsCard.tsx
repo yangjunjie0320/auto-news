@@ -11,29 +11,7 @@ interface Props {
 
 export default function NewsCard({ item, showTime = true }: Props) {
   return (
-    <div className={styles.card} data-accent={item.accent}>
-      <div className={styles.meta}>
-        {showTime && (
-          <time className={styles.time} dateTime={item.publishedAt}>
-            {item.time}
-          </time>
-        )}
-        <span className={styles.source}>{item.sourceSite}</span>
-        <span className={styles.label}>{item.label}</span>
-        {item.featured && (
-          <span className={styles.featured}>
-            <svg viewBox="0 0 24 24" width="10" height="10" aria-hidden="true">
-              <path
-                d="M12 2.4l2.5 6.3 6.7.4-5.2 4.3 1.7 6.6L12 16.4 6.3 20l1.7-6.6L2.8 9.1l6.7-.4z"
-                fill="currentColor"
-              />
-            </svg>
-            Featured
-          </span>
-        )}
-        <HeatBadge value={item.heat} />
-      </div>
-
+    <article className={styles.card} data-accent={item.accent}>
       <h3 className={styles.title}>
         <a href={item.url} target="_blank" rel="noopener noreferrer">
           <Money>{item.title}</Money>
@@ -47,6 +25,19 @@ export default function NewsCard({ item, showTime = true }: Props) {
           </li>
         ))}
       </ul>
-    </div>
+
+      {/* 元信息下沉：来源和分类是读过标题之后才需要的，不该抢在前面 */}
+      <div className={styles.meta}>
+        {showTime && (
+          <time className={styles.time} dateTime={item.publishedAt}>
+            {item.time}
+          </time>
+        )}
+        <span className={styles.source}>{item.sourceSite}</span>
+        <span className={styles.label}>{item.label}</span>
+        {item.featured && <span className={styles.featured}>Featured</span>}
+        <HeatBadge value={item.heat} />
+      </div>
+    </article>
   );
 }

@@ -9,7 +9,7 @@ export default function HotBoard({ items }: { items: NewsItem[] }) {
       <header className={styles.head}>
         <h2 className={styles.heading}>Trending Today</h2>
         <Link href="/ranking" className={styles.more}>
-          View all ›
+          View all
         </Link>
       </header>
 

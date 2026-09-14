@@ -15,7 +15,7 @@ export default function CurrencySwitch() {
 
   const rateHint = rate.stale
     ? "Rate unavailable at build time; using fallback"
-    : `1 CNY = ${rate.cnyToUsd} USD · ${rate.fetchedAt || "build time"}`;
+    : `1 CNY = ${rate.cnyToUsd} USD, as of ${rate.fetchedAt || "build time"}`;
 
   return (
     <div className={styles.switch} role="radiogroup" aria-label="Currency">

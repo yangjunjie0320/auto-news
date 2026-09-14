@@ -22,6 +22,8 @@ logger = logging.getLogger(__name__)
 
 _POINT_MAX_CHARS = 240
 _TITLE_MAX_CHARS = 200
+# 扫读锚点，太长就失去「一眼可比」的意义，也会撑破卡片布局
+_FIGURE_MAX_CHARS = 24
 
 _CJK_RE = re.compile(r"[一-鿿]")
 
@@ -64,10 +66,20 @@ TRANSLATE_SYSTEM_PROMPT = f"""你是汽车行业新闻翻译，把输入的中�
   带 ¥ 的数量会被当成金额换算，是严重错误。
 
 标题：不超过 25 个英文单词，事实化，不用感叹号、疑问句和营销形容词。
+**标题里不要重复 figure 那个数字**——它会单独显示在标题上方，写两遍读者会以为是渲染错误。
+例：figure 给 `13,189 vehicles` 时，标题写 `Voyah July deliveries rise 31% year over year`，
+不要写 `Voyah delivers 13,189 vehicles in July`。标题负责说清是什么事，数字交给 figure。
+
+figure：这条新闻里最关键的一个数字，连同单位，用于在列表里做扫读锚点。
+按这个优先级挑：交付/销量 > 价格 > 续航/功率 > 日期 > 其他数字。
+写法与正文一致（金额带 ¥，数量带单位词），不超过 24 个字符。
+例：`13,189 vehicles`、`¥380,000`、`101,267 units`、`780 km`。
+整条新闻没有任何有意义的数字时给空字符串——宁可没有，不要凑一个。
 
 {BRAND_GLOSSARY}
 
-只输出 JSON：{{"title": "<英文标题>", "points": ["<第一条英文>", "<第二条英文>"]}}"""
+只输出 JSON：
+{{"title": "<英文标题>", "figure": "<关键数字>", "points": ["<第一条英文>", "<第二条英文>"]}}"""
 
 
 def fix_money_units(text: str) -> str:
@@ -96,14 +108,25 @@ def _clean(text: object, limit: int) -> str:
     return fix_money_units(cleaned)
 
 
-def parse_translation(data: dict, expected_points: int) -> tuple[str, list[str]] | None:
-    """校验 LLM 输出。条数不符直接整批作废，不做部分接受。"""
+def parse_translation(
+    data: dict, expected_points: int
+) -> tuple[str, str, list[str]] | None:
+    """校验 LLM 输出。条数不符直接整批作废，不做部分接受。
+
+    figure 是软字段：不合格只置空，不影响标题和要点——它只是个展示锚点，
+    缺了卡片照常渲染。
+    """
     raw_points = data.get("points")
     if not isinstance(raw_points, list) or len(raw_points) != expected_points:
         return None
     title = _clean(data.get("title"), _TITLE_MAX_CHARS)
     points = [_clean(item, _POINT_MAX_CHARS) for item in raw_points]
-    return title, points
+    figure = _clean(data.get("figure"), _FIGURE_MAX_CHARS)
+    if figure and not any(ch.isdigit() for ch in figure):
+        # 不含数字的「关键数字」是模型在凑，丢掉
+        logger.warning("figure has no digit, dropping: %s", figure)
+        figure = ""
+    return title, figure, points
 
 
 def points_from_summary(summary: str) -> list[str]:
@@ -129,11 +152,11 @@ async def translate_points(
     title: str = "",
     max_tokens: int,
     timeout: float,
-) -> tuple[str, list[str]] | None:
-    """中文要点（可带标题）→ 英文。失败返回 None。
+) -> tuple[str, str, list[str]] | None:
+    """中文要点（可带标题）→ (英文标题, 关键数字, 英文要点)。失败返回 None。
 
     返回的要点列表与输入**等长**：漏翻的条目保留为空串而不是删掉，
-    调用方要按下标一一对应（digest/detail.py 用 zip(strict=True) 配对中英）。
+    调用方按下标一一对应。
     """
     listing = [f"标题：{title}"] if title.strip() else []
     listing.extend(f"{i}. {point}" for i, point in enumerate(points, 1))
@@ -161,14 +184,18 @@ async def translate_article(
     summary: str,
     settings: Settings,
     http_client: httpx.AsyncClient,
-) -> tuple[str, str]:
-    """返回 (英文标题, 英文 summary)。任何失败都返回 ("", "")，中文不受影响。"""
+) -> tuple[str, str, str]:
+    """返回 (英文标题, 英文 summary, 关键数字)。
+
+    任何失败都返回三个空串，中文字段不受影响。
+    """
+    empty = ("", "", "")
     if not settings.translate_enabled or not settings.deepseek_api_key:
-        return "", ""
+        return empty
 
     points = points_from_summary(summary)
     if not title.strip() and not points:
-        return "", ""
+        return empty
 
     parsed = await translate_points(
         points,
@@ -179,7 +206,7 @@ async def translate_article(
         timeout=settings.translate_timeout,
     )
     if parsed is None:
-        return "", ""
+        return empty
 
-    title_en, points_en = parsed
-    return title_en, summary_from_points(points_en)
+    title_en, figure_en, points_en = parsed
+    return title_en, summary_from_points(points_en), figure_en

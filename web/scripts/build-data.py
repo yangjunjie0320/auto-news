@@ -69,9 +69,9 @@ SITE_EN = {
     "汽车之家": "Autohome",
 }
 SOURCE_EN = {
-    "易车·易车原创": "Yiche · Originals",
-    "新浪汽车·新车资讯": "Sina Auto · New Cars",
-    "汽车之家·上市新车": "Autohome · Launches",
+    "易车·易车原创": "Yiche Originals",
+    "新浪汽车·新车资讯": "Sina Auto New Cars",
+    "汽车之家·上市新车": "Autohome Launches",
 }
 # 微博来源是「微博·<博主名>」，博主名逐条不同，没法穷举，
 # 统一显示成 Weibo 加博主名（博主名保持原样，不硬译人名）。
@@ -211,6 +211,30 @@ def fix_money_units(text: str) -> str:
     return fixed
 
 
+# 从英文里兜底提取一个关键数字。优先级与 translate.py 的 prompt 一致：
+# 金额 > 带单位的数量 > 其他带单位的数字。
+_FIGURE_PATTERNS = (
+    r"¥[\d,]+(?:\.\d+)?",
+    rf"[\d,]+(?:\.\d+)?\s*{_UNIT_WORDS}",
+    r"[\d,]+(?:\.\d+)?\s*(?:km|kWh|hp|mm|%)",
+)
+
+
+def extract_figure(title: str, points: list[str]) -> str:
+    """没有 figure_en 时的兜底。
+
+    抓取端上线前的历史条目只有人工翻译，没有这个字段；正则提取让这些条目
+    在版式上不至于整片空缺。新条目有 LLM 挑的字段，走不到这里。
+    """
+    for text in (title, *points):
+        for pattern in _FIGURE_PATTERNS:
+            m = re.search(pattern, text, re.IGNORECASE)
+            if m:
+                # [\d,]+ 会把句中的尾逗号一起吞进来，形成「¥59,600,」
+                return " ".join(m.group(0).split()).rstrip(",.;:")[:24]
+    return ""
+
+
 def _usable_english(title: str, points: list[str]) -> tuple[str, list[str]] | None:
     """英文必须成套且确实是英文，否则宁可整条回退中文。
 
@@ -266,9 +290,19 @@ def transform(row: dict, translations: dict) -> dict:
     else:
         source_en = SOURCE_EN.get(row["source"], row["source"])
         site_en = SITE_EN.get(site, site)
+    # 扫读锚点。优先用翻译环节挑的（它看得懂上下文），没有就正则兜底。
+    figure = row.get("figure_en", "").strip()
+    if not figure and translated:
+        figure = extract_figure(title, points)
+    # 标题里已经有这个数字就不再单独显示：同一个数字隔几个词出现两次，
+    # 看着像渲染错误。翻译 prompt 已要求标题不重复 figure，这里兜住
+    # 历史条目（它们的 figure 本来就是从标题里正则提取的）和模型偶尔不听话。
+    if figure and figure.lower() in title.lower():
+        figure = ""
     return {
         "id": row["mid"],
         "kind": kind,
+        "figure": figure,
         "title": title,
         "points": points,
         "translated": translated,
