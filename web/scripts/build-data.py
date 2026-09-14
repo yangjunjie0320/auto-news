@@ -73,6 +73,9 @@ SOURCE_EN = {
     "新浪汽车·新车资讯": "Sina Auto · New Cars",
     "汽车之家·上市新车": "Autohome · Launches",
 }
+# 微博来源是「微博·<博主名>」，博主名逐条不同，没法穷举，
+# 统一显示成 Weibo 加博主名（博主名保持原样，不硬译人名）。
+WEIBO_SITE_EN = "Weibo"
 
 # 关注度占位算法的权重。真实互动数据（阅读/转发/评论）接入后应整体替换 compute_heat。
 LABEL_WEIGHT = {"车圈热点": 34, "市场数据": 26, "产品发布": 18}
@@ -82,6 +85,8 @@ SOURCE_WEIGHT = {
     "新浪汽车·新车资讯": 16,
 }
 HOT_WORDS = ("上市", "交付", "预售", "降价", "价格战", "销量", "发布", "首发", "官宣")
+# 微博是观点不是通稿，给一个中性权重；博主名无法穷举，走不到 SOURCE_WEIGHT
+WEIBO_SOURCE_WEIGHT = 20
 
 
 def compute_heat(row: dict) -> int:
@@ -91,7 +96,10 @@ def compute_heat(row: dict) -> int:
     等抓取端拿到真实互动指标后，这个函数应当被整体替换，而不是继续加权重。
     """
     score = LABEL_WEIGHT.get(row["label"], 16)
-    score += SOURCE_WEIGHT.get(row["source"], 14)
+    if row.get("kind") == "weibo":
+        score += WEIBO_SOURCE_WEIGHT
+    else:
+        score += SOURCE_WEIGHT.get(row["source"], 14)
     title = row["title"]
     score += min(sum(4 for w in HOT_WORDS if w in title), 16)
     score += min(len(re.findall(r"\d+", title)) * 3, 12)
@@ -249,17 +257,26 @@ def transform(row: dict, translations: dict) -> dict:
     translated = english is not None
     title, points = english if translated else (row["title"], split_points(row["summary"]))
 
+    kind = row.get("kind", "web")
     site = row["source"].split("·")[0]
+    if kind == "weibo":
+        # 「微博·某博主」-> source 用博主名，sourceSite 统一为 Weibo
+        handle = row["source"].split("·", 1)[-1]
+        source_en, site_en = handle, WEIBO_SITE_EN
+    else:
+        source_en = SOURCE_EN.get(row["source"], row["source"])
+        site_en = SITE_EN.get(site, site)
     return {
         "id": row["mid"],
+        "kind": kind,
         "title": title,
         "points": points,
         "translated": translated,
         "label": meta["en"],
         "labelSlug": meta["slug"],
         "accent": meta["accent"],
-        "source": SOURCE_EN.get(row["source"], row["source"]),
-        "sourceSite": SITE_EN.get(site, site),
+        "source": source_en,
+        "sourceSite": site_en,
         "url": row["url"],
         "publishedAt": created.isoformat().replace("+00:00", "Z"),
         "date": local.strftime("%Y-%m-%d"),

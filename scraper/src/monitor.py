@@ -97,6 +97,9 @@ class Monitor:
         self._health.write(status="starting", cycle=_cycle_stats(summary), last_error=None)
 
         for index, fetcher in enumerate(fetchers):
+            if not self._is_due(fetcher):
+                summary["skipped"] += 1
+                continue
             summary["attempted"] += 1
             try:
                 new, pushed, dropped = await self._poll_source(fetcher)
@@ -158,6 +161,30 @@ class Monitor:
                 next_cycle_at=None,
                 last_error=summary.get("last_error"),
             )
+
+    def _is_due(self, fetcher: SourceFetcher) -> bool:
+        """按源判断是否到点。
+
+        微博用访客 cookie，抓太勤会被限流，所以 sources.yaml 给它配了
+        interval_seconds: 86400。没配的源跟着全局 poll_interval_seconds 走，
+        也就是每轮都抓。
+        """
+        interval = getattr(fetcher, "interval_seconds", None)
+        if not interval:
+            return True
+        last = self._state.last_poll(fetcher.key)
+        if last is None:
+            return True
+        elapsed = (dt.datetime.now(dt.UTC) - last).total_seconds()
+        if elapsed >= interval:
+            return True
+        logger.info(
+            "source not due, skipping: key=%s elapsed=%.0fs interval=%ds",
+            fetcher.key,
+            elapsed,
+            interval,
+        )
+        return False
 
     async def _poll_source(self, fetcher: SourceFetcher) -> tuple[int, int, int]:
         key = fetcher.key

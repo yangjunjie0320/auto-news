@@ -37,7 +37,7 @@ def load_sources(path: str | Path) -> list[Source]:
 async def _run(settings: Settings, *, once: bool, dry_run: bool) -> None:
     logger = logging.getLogger(__name__)
     sources = load_sources(settings.sources_file)
-    fetchers = build_fetchers(sources)
+    fetchers = build_fetchers(sources, settings)
     if not fetchers:
         raise RuntimeError("no enabled sources")
 
@@ -68,7 +68,7 @@ async def _run(settings: Settings, *, once: bool, dry_run: bool) -> None:
 
 def _self_check(settings: Settings, config_path: str | Path | None = None) -> None:
     sources = load_sources(settings.sources_file)
-    build_fetchers(sources)
+    build_fetchers(sources, settings)
     if settings.classification_enabled and not settings.deepseek_api_key:
         # 分类是归档内容的唯一来源，没跑等于产出空标签，必须挡住
         raise RuntimeError("deepseek_api_key must be configured")
@@ -101,7 +101,7 @@ def _self_check(settings: Settings, config_path: str | Path | None = None) -> No
 async def _probe(settings: Settings, key: str | None) -> int:
     logger = logging.getLogger(__name__)
     sources = load_sources(settings.sources_file)
-    fetchers = build_fetchers(sources)
+    fetchers = build_fetchers(sources, settings)
     target = fetchers[0]
     if key:
         target = next((f for f in fetchers if f.key == key), None)

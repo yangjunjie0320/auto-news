@@ -1,7 +1,26 @@
 # 抓取数据源清单。key 必须与 src/sources 里注册的抓取器一致；name 用于展示。
+#
+# interval_seconds 留空 = 跟着全局 poll_interval_seconds（每小时）。
+# kind 留空 = "web"，会透进归档供网站与 RSS 区分新闻与微博观点。
 sources:
+  # 新闻站：官方事实（发布、销量、政策），每小时抓
   - {key: "yiche-u61014816", name: "易车·易车原创", enabled: true}
   # 车型日历没有文章正文；保留旧 key 便于回滚，默认改用可抓全文的新闻流。
   - {key: "sina-newcar", name: "新浪汽车·新车上市", enabled: false}
   - {key: "sina-newcar-news", name: "新浪汽车·新车资讯", enabled: true}
   - {key: "autohome-newbrand", name: "汽车之家·上市新车", enabled: true}
+
+  # 微博：增量观点（实车体验、渠道见闻、质疑、分析）。
+  # 访客 cookie 抓太勤会被限流，所以每天一次，不跟新闻站的每小时节奏。
+  - key: "weibo-pool"
+    name: "微博·账号池"
+    enabled: true
+    interval_seconds: 86400
+    kind: "weibo"
+  # 关键词搜索噪声比账号池大得多，默认关闭；
+  # 要开的话先在 config.yaml 里填 weibo_search_queries（必须是品牌名/车型名这类专有名词）。
+  - key: "weibo-search"
+    name: "微博·关键词"
+    enabled: false
+    interval_seconds: 86400
+    kind: "weibo"

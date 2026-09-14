@@ -17,21 +17,29 @@ interface Props {
 /** 精选流：品牌栏 + 分类 tab + 搜索，三者联合筛选后交给 Timeline 渲染。 */
 export default function Feed({ items, labels, brands, children }: Props) {
   const [label, setLabel] = useState<string>("all");
+  // 新闻是官方事实，微博是增量观点，性质不同，值得能单独看
+  const [kind, setKind] = useState<"all" | "web" | "weibo">("all");
   const [brand, setBrand] = useState<string | null>(null);
   const [query, setQuery] = useState<string>("");
 
   const keyword = query.trim().toLowerCase();
-  const filtering = keyword !== "" || brand !== null || label !== "all";
+  const filtering =
+    keyword !== "" || brand !== null || label !== "all" || kind !== "all";
 
   // 分类计数跟随品牌筛选，否则选了 BYD 还显示全站的 66 条 Product Launch。
   // 反过来品牌计数不跟随分类，避免品牌栏的数字来回跳。
+  const kindScope = useMemo(
+    () => (kind === "all" ? items : items.filter((it) => it.kind === kind)),
+    [items, kind],
+  );
+
   const brandScope = useMemo(
-    () => (brand ? items.filter((it) => it.brands.includes(brand)) : items),
-    [items, brand],
+    () => (brand ? kindScope.filter((it) => it.brands.includes(brand)) : kindScope),
+    [kindScope, brand],
   );
 
   const visible = useMemo(() => {
-    return items.filter((it) => {
+    return kindScope.filter((it) => {
       if (label !== "all" && it.labelSlug !== label) return false;
       if (brand && !it.brands.includes(brand)) return false;
       if (!keyword) return true;
@@ -40,7 +48,7 @@ export default function Feed({ items, labels, brands, children }: Props) {
         it.points.some((p) => p.toLowerCase().includes(keyword))
       );
     });
-  }, [items, label, brand, keyword]);
+  }, [kindScope, label, brand, keyword]);
 
   const groups = useMemo(() => {
     const map = new Map<string, NewsItem[]>();
@@ -53,6 +61,12 @@ export default function Feed({ items, labels, brands, children }: Props) {
   }, [visible]);
 
   const tabs = [{ name: "All", slug: "all" }, ...labels];
+  const hasWeibo = useMemo(() => items.some((it) => it.kind === "weibo"), [items]);
+  const kinds = [
+    { name: "All sources", slug: "all" as const },
+    { name: "News", slug: "web" as const },
+    { name: "Weibo", slug: "weibo" as const },
+  ];
   const activeBrand = brand ? brands.find((b) => b.slug === brand) : null;
 
   return (
@@ -72,6 +86,36 @@ export default function Feed({ items, labels, brands, children }: Props) {
       />
 
       <div className={styles.bar}>
+        {hasWeibo && (
+          <div className={styles.tabs} role="tablist" aria-label="Source type">
+            {kinds.map((k) => (
+              <button
+                key={k.slug}
+                role="tab"
+                aria-selected={kind === k.slug}
+                className={styles.tab}
+                data-active={kind === k.slug}
+                onClick={() => {
+                  setKind(k.slug);
+                  // 换来源后当前分类可能一条都没有，回到 All 免得显示空列表
+                  const scope =
+                    k.slug === "all" ? items : items.filter((it) => it.kind === k.slug);
+                  if (label !== "all" && !scope.some((it) => it.labelSlug === label)) {
+                    setLabel("all");
+                  }
+                }}
+              >
+                {k.name}
+                <span className={styles.count}>
+                  {k.slug === "all"
+                    ? items.length
+                    : items.filter((it) => it.kind === k.slug).length}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
+
         <div className={styles.tabs} role="tablist">
           {tabs.map((t) => {
             const count =

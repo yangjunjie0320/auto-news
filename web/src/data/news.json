@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-09-13T14:57:14.047266Z",
+  "generatedAt": "2026-09-14T05:21:22.495391Z",
   "rate": {
-    "cnyToUsd": 0.148571,
-    "fetchedAt": "Sun, 13 Sep 2026 00:02:31 +0000",
+    "cnyToUsd": 0.148908,
+    "fetchedAt": "Mon, 14 Sep 2026 00:02:31 +0000",
     "source": "open.er-api.com",
     "stale": false
   },
@@ -341,6 +341,7 @@
   "items": [
     {
       "id": "sina-news-inikuwea8891226",
+      "kind": "web",
       "title": "New price war hits: BMW X6 M discounted by up to ¥380,000 nationwide",
       "points": [
         "The BMW X6 M is discounted by up to ¥380,000 nationwide, a 25.9% cut, with a starting price of ¥1,088,900.",
@@ -366,6 +367,7 @@
     },
     {
       "id": "yiche-13111934327",
+      "kind": "web",
       "title": "Voyah delivers 13,189 vehicles in July; Passion S launches August 15",
       "points": [
         "Voyah delivered 13,189 vehicles in July and 89,453 units January–July, up 31% year over year.",
@@ -390,6 +392,7 @@
     },
     {
       "id": "yiche-12111933020",
+      "kind": "web",
       "title": "XPeng delivers 38,027 vehicles in July, passing 1.2M cumulative deliveries globally",
       "points": [
         "XPeng Group delivered 38,027 vehicles in July, up about 4% year over year.",
@@ -414,6 +417,7 @@
     },
     {
       "id": "yiche-12111932778",
+      "kind": "web",
       "title": "NIO delivers 35,934 vehicles in July; cumulative deliveries reach 1,224,649",
       "points": [
         "NIO delivered 35,934 vehicles in July, up 71.0% year over year.",
@@ -440,6 +444,7 @@
     },
     {
       "id": "yiche-12111930670",
+      "kind": "web",
       "title": "Zeekr delivers 35,837 vehicles in July; global users pass 850,000",
       "points": [
         "Zeekr delivered 35,837 vehicles in July, up 111% year over year and a monthly record.",
@@ -464,6 +469,7 @@
     },
     {
       "id": "yiche-11111929960",
+      "kind": "web",
       "title": "HIMA delivers 45,046 vehicles in July; cumulative deliveries reach 1.48M",
       "points": [
         "HIMA delivered 45,046 vehicles in July and 286,000 units January–July, up 13.7% year over year.",
@@ -490,6 +496,7 @@
     },
     {
       "id": "yiche-11111929716",
+      "kind": "web",
       "title": "AION Y Plus Black & White Warrior Edition launches at a flat ¥89,800",
       "points": [
         "GAC Aion launched the AION Y Plus Black & White Warrior Edition on August 1 at a flat price of ¥89,800.",
@@ -514,6 +521,7 @@
     },
     {
       "id": "yiche-11111929282",
+      "kind": "web",
       "title": "Leapmotor delivers 101,267 vehicles globally in July, topping 100,000 in a month for the first time",
       "points": [
         "Leapmotor delivered 101,267 vehicles globally in July, up 102% year over year and past 100,000 for the first time.",
@@ -538,6 +546,7 @@
     },
     {
       "id": "yiche-10111928710",
+      "kind": "web",
       "title": "FAW-Volkswagen first in industry to offer dual lifetime warranty across the range",
       "points": [
         "From August 1, FAW-Volkswagen offers a dual lifetime warranty to new buyers of all ICE and PHEV models.",
@@ -562,6 +571,7 @@
     },
     {
       "id": "yiche-10111928300",
+      "kind": "web",
       "title": "Li Auto delivers 30,468 vehicles in July; cumulative deliveries reach 1,764,155",
       "points": [
         "Li Auto delivered 30,468 vehicles in July, for 1,764,155 cumulative deliveries.",
@@ -586,6 +596,7 @@
     },
     {
       "id": "yiche-09111926385",
+      "kind": "web",
       "title": "Xiaomi delivers over 30,000 vehicles in July; Pengcheng series expected in September",
       "points": [
         "Xiaomi Auto delivered more than 30,000 vehicles in July.",
@@ -610,6 +621,7 @@
     },
     {
       "id": "autohome-1316126",
+      "kind": "web",
       "title": "Wuling Yangguang Pro launches from ¥94,800, nearly 5.5m long with up to 405km range",
       "points": [
         "The Wuling Yangguang Pro launched in five trims priced ¥94,800–¥138,800 with member benefits.",
@@ -634,6 +646,7 @@
     },
     {
       "id": "sina-news-inikshrm0978733",
+      "kind": "web",
       "title": "Hongguang MINIEV turns six as Wuling city-car users approach 3 million",
       "points": [
         "SAIC-GM-Wuling says its city-car user base will pass 3 million, with a sixth-anniversary event on August 7.",
@@ -658,6 +671,7 @@
     },
     {
       "id": "sina-news-inikrfec1709548",
+      "kind": "web",
       "title": "Entering the EREV race: Xiaomi opens pre-orders for two Pengcheng SUV Max variants",
       "points": [
         "Xiaomi unveiled its Kunlun technology architecture and the Pengcheng series, opening pre-orders for two extended-range SUVs.",
@@ -682,6 +696,7 @@
     },
     {
       "id": "sina-news-inikqywf1776848",
+      "kind": "web",
       "title": "FREELANDER 8 enters volume production; pre-orders open August 10",
       "points": [
         "The FREELANDER 8, developed by Chery with Jaguar Land Rover, rolled off the line and opens pre-orders August 10.",
@@ -707,6 +722,7 @@
     },
     {
       "id": "sina-news-inikpaeu9857299",
+      "kind": "web",
       "title": "MG 07 opens pre-orders in the ¥125,900–¥168,900 range",
       "points": [
         "The MG 07 opened pre-orders across five trims at ¥125,900–¥168,900.",
@@ -731,6 +747,7 @@
     },
     {
       "id": "sina-news-iniknmim2558657",
+      "kind": "web",
       "title": "Denza Z9S pre-orders open August 3 with second-generation Blade battery and flash charging",
       "points": [
         "The Denza Z9S opens pre-orders on August 3, positioned as a tech-luxury intelligent sedan.",
@@ -755,6 +772,7 @@
     },
     {
       "id": "sina-news-inikimei2629185",
+      "kind": "web",
       "title": "Zeekr 9X five-seat version launches at a limited-time ¥451,900",
       "points": [
         "The Zeekr 9X five-seater launched in three trims at limited-time prices of ¥451,900 to ¥565,900.",
@@ -779,6 +797,7 @@
     },
     {
       "id": "autohome-1316030",
+      "kind": "web",
       "title": "From ¥988,000, limited to 9 units in China: new Lotus Emira Scura launches",
       "points": [
         "The Lotus Emira Scura limited edition launched from ¥988,000, capped at nine units in China.",
@@ -803,6 +822,7 @@
     },
     {
       "id": "autohome-1316005",
+      "kind": "web",
       "title": "2026 Lorinser Gulfstream four-seater launches from ¥1,688,000 with 50-inch IMAX partition screen",
       "points": [
         "The 2026 Lorinser Gulfstream four-seater launched in two versions at ¥1,688,000 and ¥1,988,000.",
@@ -827,6 +847,7 @@
     },
     {
       "id": "sina-news-iniizrew8964968",
+      "kind": "web",
       "title": "Priced ¥109,900–¥129,900: Chery Fulwin A9 officially launches",
       "points": [
         "The Chery Fulwin A9 officially launched at ¥109,900–¥129,900.",
@@ -851,6 +872,7 @@
     },
     {
       "id": "sina-news-iniixnfw9303787",
+      "kind": "web",
       "title": "BYD Dynasty delivers its 10,000th Tang EV",
       "points": [
         "BYD Dynasty held a handover ceremony for the 10,000th Tang EV in Koktokay, Xinjiang, unveiling a flash-charging corridor.",
@@ -875,6 +897,7 @@
     },
     {
       "id": "sina-news-iniixnhf1579934",
+      "kind": "web",
       "title": "bZ7 announces full battery liability policy, no penalty for existing owners",
       "points": [
         "GAC Toyota announced a policy accepting full manufacturer liability for battery fire incidents, covering new and existing bZ7 and bZ3X owners.",
@@ -899,6 +922,7 @@
     },
     {
       "id": "sina-news-iniixnfz4860569",
+      "kind": "web",
       "title": "Han EV offers 1,008km of electric range, debuting at the Chengdu auto show",
       "points": [
         "The BYD Han EV offers 1,008km of range and will appear at the Chengdu auto show in August.",
@@ -923,6 +947,7 @@
     },
     {
       "id": "sina-news-iniixnhf1515171",
+      "kind": "web",
       "title": "An AI all-terrain hardcore SUV: Geely Galaxy Zhanjian 700 makes its debut",
       "points": [
         "Geely's Galaxy Zhanjian 700 made its global debut in Hangzhou as a mid-to-large plug-in hybrid hardcore SUV measuring 5,085/1,999/1,912…",
@@ -947,6 +972,7 @@
     },
     {
       "id": "sina-news-iniiwzsm1530854",
+      "kind": "web",
       "title": "Voyah Passion S opens pre-orders at ¥309,900",
       "points": [
         "The Voyah Passion S opened pre-orders at ¥309,900, with dual zero-gravity seats among the launch benefits.",
@@ -971,6 +997,7 @@
     },
     {
       "id": "autohome-1315972",
+      "kind": "web",
       "title": "Priced at ¥359,800: Subaru Outback Wilderness launches with Q3 deliveries",
       "points": [
         "The Subaru Outback Wilderness launched through parallel import at ¥359,800, with deliveries expected by the end of Q3…",
@@ -995,6 +1022,7 @@
     },
     {
       "id": "sina-news-iniivihz5230607",
+      "kind": "web",
       "title": "Limited-time member price from ¥165,800: Dongfeng eπ M8 launches",
       "points": [
         "The Dongfeng eπ M8 launched in five versions from a limited-time member price of ¥165,800.",
@@ -1019,6 +1047,7 @@
     },
     {
       "id": "sina-news-iniivihw9347500",
+      "kind": "web",
       "title": "Limited-time ¥145,800–¥196,800: Lynk & Co 07 GT officially launches",
       "points": [
         "The Lynk & Co 07 GT launched in four trims listed at ¥157,800–¥208,800, with limited-time pricing of ¥145,800–¥196,800.",
@@ -1043,6 +1072,7 @@
     },
     {
       "id": "autohome-1315936",
+      "kind": "web",
       "title": "Mecha styling! Limited-time ¥449,800: FAW Toyota Land Cruiser Prado WALD edition launches",
       "points": [
         "The FAW Toyota Land Cruiser Prado WALD edition launched at a list price of ¥499,800 and a limited-time price of ¥449,800.",
@@ -1067,6 +1097,7 @@
     },
     {
       "id": "sina-news-iniirwqn4808368",
+      "kind": "web",
       "title": "BYD Qin MAX interior and exterior revealed, positioned as a mid-size sedan",
       "points": [
         "BYD revealed the Qin MAX as a mid-size sedan measuring 4,866×1,880×1,495mm on a 2,820mm wheelbase.",
@@ -1091,6 +1122,7 @@
     },
     {
       "id": "autohome-1315913",
+      "kind": "web",
       "title": "Subaru Crosstrek Boxer 60th Anniversary edition launches from ¥215,800, limited to 25 units",
       "points": [
         "The Subaru Crosstrek Boxer 60th Anniversary edition launched in two trims at ¥215,800–¥230,800, limited to 25 units.",
@@ -1115,6 +1147,7 @@
     },
     {
       "id": "autohome-1315902",
+      "kind": "web",
       "title": "All-new styling and a longer wheelbase: new GAC Trumpchi GS4 launches July 24",
       "points": [
         "The all-new GAC Trumpchi GS4 launches July 24 as a five-seat compact SUV.",
@@ -1139,6 +1172,7 @@
     },
     {
       "id": "autohome-1315871",
+      "kind": "web",
       "title": "2027 Trumpchi Xiangwang S7 PHEV launches July 22 with upgraded 192-line LiDAR",
       "points": [
         "The 2027 Trumpchi Xiangwang S7 PHEV launches July 22 with an upgraded 192-line LiDAR.",
@@ -1163,6 +1197,7 @@
     },
     {
       "id": "autohome-1315869",
+      "kind": "web",
       "title": "Chery Fulwin A9 launches July 25 from ¥115,900, an all-electric mid-to-large coupe sedan",
       "points": [
         "The Chery Fulwin A9 launches July 25 with pre-order pricing of ¥115,900–¥135,900.",
@@ -1187,6 +1222,7 @@
     },
     {
       "id": "autohome-1315849",
+      "kind": "web",
       "title": "Lynk & Co 07 GT, Geely Galaxy TT Ultra and more: 2026 week 30 (Jul 20–26) new car preview",
       "points": [
         "The Geely Galaxy TT Ultra opens pre-orders July 21 with dual-motor AWD, 0–100 km/h in 3.8 seconds and 650km of CLTC range.",
@@ -1213,6 +1249,7 @@
     },
     {
       "id": "autohome-1315834",
+      "kind": "web",
       "title": "Priced at ¥182,800 with 1,580km combined range: Hongqi HS6 PHEV 152 Zhixiang launches",
       "points": [
         "The Hongqi HS6 PHEV 152 Zhixiang edition launched at ¥182,800.",
@@ -1237,6 +1274,7 @@
     },
     {
       "id": "autohome-1315821",
+      "kind": "web",
       "title": "Pre-priced from ¥199,800 with six Huawei systems standard: Dongfeng eπ M8 launches July 23",
       "points": [
         "The Dongfeng eπ M8 launches July 23 with pre-order pricing from ¥199,800.",
@@ -1261,6 +1299,7 @@
     },
     {
       "id": "autohome-1315816",
+      "kind": "web",
       "title": "Priced at ¥329,800: second-generation Denza D9 PHEV flash-charge Luxury lowers the entry point",
       "points": [
         "The second-generation Denza D9 PHEV flash-charge Luxury launched at ¥329,800 as the new entry trim.",
@@ -1285,6 +1324,7 @@
     },
     {
       "id": "autohome-1315797",
+      "kind": "web",
       "title": "From ¥199,800 after limited-time benefits, with a new infotainment chip: 2026 Nissan Pathfinder launches",
       "points": [
         "The 2026 Nissan Pathfinder launched in two trims listed at ¥219,800 and ¥249,800, with limited-time prices of ¥199,800 and ¥22…",
@@ -1309,6 +1349,7 @@
     },
     {
       "id": "autohome-1315784",
+      "kind": "web",
       "title": "BMW 7 Series Yiying Collector's Edition launches at ¥1,218,000, limited to 700 units worldwide",
       "points": [
         "The BMW 7 Series Yiying Collector's Edition launched at ¥1,218,000, limited to 700 units worldwide.",
@@ -1333,6 +1374,7 @@
     },
     {
       "id": "autohome-1315782",
+      "kind": "web",
       "title": "A ¥5,000 deposit unlocks up to ¥90,000 in benefits: Zeekr 9X five-seater launches July 28",
       "points": [
         "The Zeekr 9X five-seater launches July 28, with a ¥5,000 deposit unlocking up to ¥90,000 in benefits.",
@@ -1357,6 +1399,7 @@
     },
     {
       "id": "autohome-1315749",
+      "kind": "web",
       "title": "Priced at ¥222,500: FAW-Volkswagen Tayron L 380TSI 35th Anniversary Selection launches",
       "points": [
         "The FAW-Volkswagen Tayron L 380TSI 35th Anniversary Selection launched at ¥222,500.",
@@ -1381,6 +1424,7 @@
     },
     {
       "id": "autohome-1315748",
+      "kind": "web",
       "title": "Pre-priced from ¥165,800! Lynk & Co 07 GT launches July 23!",
       "points": [
         "The Lynk & Co 07 GT launches July 23, pre-priced at ¥165,800–¥185,800 with a time-limited edition at ¥208,800.",
@@ -1405,6 +1449,7 @@
     },
     {
       "id": "autohome-1315705",
+      "kind": "web",
       "title": "Awaiting pricing, with a 1.5T plug-in hybrid: WEY V9X Family Edition launches July 16",
       "points": [
         "The WEY V9X Family Edition launches July 16 with a 1.5T plug-in hybrid, expected to serve as the new entry trim.",
@@ -1429,6 +1474,7 @@
     },
     {
       "id": "autohome-1315704",
+      "kind": "web",
       "title": "Priced at ¥259,800: Ford Edge L AWD five-seat Comfort launches with a five-seat layout",
       "points": [
         "The Ford Edge L adds a 2.0T AWD five-seat Comfort trim at ¥259,800.",
@@ -1453,6 +1499,7 @@
     },
     {
       "id": "autohome-1315703",
+      "kind": "web",
       "title": "2,820mm wheelbase with PHEV and EV options: BYD Qin MAX teaser released",
       "points": [
         "BYD released Qin MAX teasers, positioning it as a mid-size sedan on a 2,820mm wheelbase, longer than the Qin L.",
@@ -1477,6 +1524,7 @@
     },
     {
       "id": "autohome-1315655",
+      "kind": "web",
       "title": "Dongfeng Nissan NX8 EREV 260 Pro launches at a limited-time ¥159,900 with 260km of electric range",
       "points": [
         "The Dongfeng Nissan NX8 EREV 260 Pro launched at ¥169,900, with a limited-time trade-in price of ¥159,900.",
@@ -1501,6 +1549,7 @@
     },
     {
       "id": "autohome-1315640",
+      "kind": "web",
       "title": "NIO ES8 five-seater from ¥274,800 with battery rental, dual reclining rear seats and a huge trunk",
       "points": [
         "The NIO ES8 five-seater launched at ¥382,800–¥422,800, or ¥274,800–¥314,800 under the BaaS battery rental scheme…",
@@ -1525,6 +1574,7 @@
     },
     {
       "id": "autohome-1315595",
+      "kind": "web",
       "title": "Pre-priced from ¥117,800, an all-new mid-to-large PHEV SUV: Wuling Starlight L launches July 16",
       "points": [
         "The Wuling Starlight L launches July 16, pre-priced at ¥122,800–¥142,800 with member pricing of ¥117,800–¥137,800…",
@@ -1549,6 +1599,7 @@
     },
     {
       "id": "autohome-1315583",
+      "kind": "web",
       "title": "50-inch AR-HUD and dual zero-gravity seats! New Leapmotor B01/B10 open blind pre-orders!",
       "points": [
         "The Leapmotor B01 and B10 opened blind pre-orders, with a ¥99 deposit unlocking exclusive benefits.",
@@ -1573,6 +1624,7 @@
     },
     {
       "id": "autohome-1315574",
+      "kind": "web",
       "title": "Launching in July with an optional quad-LiDAR setup: new Li L6 spotted",
       "points": [
         "The new Li L6 launches in July, adding an optional quad-LiDAR configuration.",
@@ -1597,6 +1649,7 @@
     },
     {
       "id": "autohome-1315521",
+      "kind": "web",
       "title": "All-new electric Mercedes GLC, updated Tank 300 and more: 2026 week 28 (Jul 6–12) new car preview",
       "points": [
         "The updated Tank 300 gets exterior upgrades, growing 136mm longer with a 3,010mm wheelbase and adding LiDAR.",
@@ -1623,6 +1676,7 @@
     },
     {
       "id": "autohome-1315513",
+      "kind": "web",
       "title": "Pre-priced from ¥189,900: 2027 Exeed ES launches July 20 with Falcon 700",
       "points": [
         "The 2027 Exeed ES is pre-priced at ¥189,900–¥219,900, launching July 20.",
@@ -1647,6 +1701,7 @@
     },
     {
       "id": "autohome-1315475",
+      "kind": "web",
       "title": "Range Rover Black Steed edition launches at ¥1,498,000 with exclusive exterior and interior packs",
       "points": [
         "The Range Rover Black Steed edition launched at ¥1,498,000.",
@@ -1671,6 +1726,7 @@
     },
     {
       "id": "autohome-1315421",
+      "kind": "web",
       "title": "Current model from ¥309,800: updated Ford Explorer launches July 6 with equipment upgrades",
       "points": [
         "The updated Ford Explorer launches July 6; the current model is priced ¥309,800–¥399,800.",
@@ -1695,6 +1751,7 @@
     },
     {
       "id": "autohome-1315419",
+      "kind": "web",
       "title": "Steer-by-wire on board! IM Motors LS9 Hyper launches July 16. A new six-seat champion?",
       "points": [
         "The IM Motors LS9 Hyper launches July 16, positioned as a large six-seat premium SUV in the ¥300,000 class.",
@@ -1719,6 +1776,7 @@
     },
     {
       "id": "autohome-1315397",
+      "kind": "web",
       "title": "Diesel and petrol, 17 trims: 2026 Rich 6 Pro officially launches",
       "points": [
         "Zhengzhou Nissan launched the 2026 Rich 6 Pro in 17 trims, with petrol versions at ¥99,900–¥134,900 and diesel from ¥10…",
@@ -1743,6 +1801,7 @@
     },
     {
       "id": "autohome-1315372",
+      "kind": "web",
       "title": "From ¥143,800 with RWD or AWD: Rich all-electric pickup ZNA RICH debuts",
       "points": [
         "Zhengzhou Nissan launched the Rich all-electric pickup ZNA RICH in two trims listed at ¥143,800–¥158,800.",
@@ -1767,6 +1826,7 @@
     },
     {
       "id": "autohome-1315364",
+      "kind": "web",
       "title": "From ¥188,800, sharing a platform with the BYD Xia: Linghui M9 officially launches!",
       "points": [
         "The Linghui M9 launched at ¥188,800 and ¥199,800, positioned as a mid-to-large MPV.",
@@ -1792,6 +1852,7 @@
     },
     {
       "id": "autohome-1315359",
+      "kind": "web",
       "title": "XPeng MONA L03 opens pre-orders July 2, styled by a former Ferrari designer, EV and EREV",
       "points": [
         "The XPeng MONA L03 opens pre-orders July 2 as a compact SUV offered in all-electric and extended-range forms.",
@@ -1817,6 +1878,7 @@
     },
     {
       "id": "autohome-1315352",
+      "kind": "web",
       "title": "BYD Seal 08, all-new BMW X5 and more: 2026 week 27 (Jun 29–Jul 5) new car preview",
       "points": [
         "The BYD Seal 08 is a mid-to-large flagship sedan with 900km of CLTC range as an EV and 1,000km combined as a PHEV.",
@@ -1843,6 +1905,7 @@
     },
     {
       "id": "autohome-1315332",
+      "kind": "web",
       "title": "Trade-in price from ¥89,900: updated Chery Jetour Freelander 1.5T launches",
       "points": [
         "The updated Chery Jetour Freelander 1.5T launched in three trims listed at ¥114,900–¥134,900.",
@@ -1869,6 +1932,7 @@
     },
     {
       "id": "autohome-1315325",
+      "kind": "web",
       "title": "How does a supercar brand build a 1,000-hp electric sedan? Ferrari Luce debuts and launches in China",
       "points": [
         "Ferrari's first all-electric model, the Luce, launched in China from ¥3,988,000.",
@@ -1893,6 +1957,7 @@
     },
     {
       "id": "autohome-1315312",
+      "kind": "web",
       "title": "Updated Hongqi Tiangong 08 opens pre-orders July 1, with early-bird reservations already live",
       "points": [
         "The updated Hongqi Tiangong 08 opens pre-orders on July 1, 2026, following ¥99 early-bird reservations from June 17.",
@@ -1917,6 +1982,7 @@
     },
     {
       "id": "autohome-1315286",
+      "kind": "web",
       "title": "Pre-priced from ¥349,000: all-new electric Mercedes GLC launches July 8 as the first MB.EA model",
       "points": [
         "The all-new electric Mercedes GLC is pre-priced from ¥349,000 and launches July 8.",
@@ -1941,6 +2007,7 @@
     },
     {
       "id": "autohome-1315261",
+      "kind": "web",
       "title": "Pre-priced from ¥69,800: Xinyuan Xiangshang V6 launches June 30, resetting the entry-family standard",
       "points": [
         "The Xinyuan Xiangshang V6 all-electric MPV launches June 30, pre-priced at ¥69,800–¥94,800.",
@@ -1965,6 +2032,7 @@
     },
     {
       "id": "autohome-1315217",
+      "kind": "web",
       "title": "Five-seat version opens reservations June 28 as NIO ES8 completes its 120,000th delivery",
       "points": [
         "The NIO ES8 reached 120,000 deliveries in 275 days, with 11,472 units sold in May and six straight months leading large SUVs and the ¥40…",
@@ -1989,6 +2057,7 @@
     },
     {
       "id": "autohome-1315198",
+      "kind": "web",
       "title": "Reportedly from ¥250,000 with blind pre-orders open: BYD Seal 08 may launch July 2",
       "points": [
         "The BYD Seal 08 may launch July 2 with blind pre-orders open and a reported ¥250,000 deposit tier for the AWD flagship.",
@@ -2013,6 +2082,7 @@
     },
     {
       "id": "autohome-1315196",
+      "kind": "web",
       "title": "Pre-priced from ¥219,900 with Huawei's full Qiankun stack: Qijing GT7 launches June 26",
       "points": [
         "The Qijing GT7 launches June 26, pre-priced at ¥219,900–¥309,900.",
@@ -2037,6 +2107,7 @@
     },
     {
       "id": "autohome-1315194",
+      "kind": "web",
       "title": "All-new Li L8, Leapmotor D99 and more: 2026 week 26 (Jun 22–28) new car preview",
       "points": [
         "The all-new Li L8 arrives in Ultra and Livis versions with 430km of CLTC electric range and 1,670… combined.",
@@ -2063,6 +2134,7 @@
     },
     {
       "id": "autohome-1315172",
+      "kind": "web",
       "title": "Major equipment upgrade, launching July 2: 2027 Toyota Granvia arrives in showrooms",
       "points": [
         "The 2027 Toyota Granvia has arrived in showrooms ahead of its July 2 launch.",
@@ -2087,6 +2159,7 @@
     },
     {
       "id": "autohome-1315151",
+      "kind": "web",
       "title": "Power and range upgrades: updated Mengshi M817 launches June 27",
       "points": [
         "The updated Mengshi M817 launches June 27, pre-priced at ¥370,000 to ¥420,000.",
@@ -2111,6 +2184,7 @@
     },
     {
       "id": "autohome-1315090",
+      "kind": "web",
       "title": "Jetour Freelander 7 PLUS and updated Shanhai T1 AWD launch June 26",
       "points": [
         "The Jetour Freelander 7 PLUS and the updated Shanhai T1 AWD launch June 26.",
@@ -2136,6 +2210,7 @@
     },
     {
       "id": "autohome-1315072",
+      "kind": "web",
       "title": "Pre-priced from ¥174,900: Volkswagen Magotan PHEV and Tayron L PHEV launch June 25",
       "points": [
         "The Volkswagen Magotan PHEV and Tayron L PHEV launch June 25, pre-priced from ¥174,900.",
@@ -2160,6 +2235,7 @@
     },
     {
       "id": "autohome-1315054",
+      "kind": "web",
       "title": "Maextro S800 Grand Design enters the purchase-tax exemption list with 780km of electric range",
       "points": [
         "The Maextro S800 Grand Design entered the purchase-tax exemption catalogue, with 780km of range as an EV and WLTC… for the EREV.",

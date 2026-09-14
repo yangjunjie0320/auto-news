@@ -40,6 +40,7 @@ class ArticlePipeline:
             title, summary, self._settings, self._http_client
         )
         return DigestRecord(
+            kind=post.kind,
             mid=post.mid,
             source=post.screen_name,
             title=title,

@@ -33,5 +33,14 @@ deepseek_api_key: ""
 # 分类之后单独调一次。失败只降级成没有英文，中文字段和中文 RSS 不受影响。
 translate_enabled: true
 
+# 微博抓取。启用哪些源在 sources.yaml，这里只配参数。
+# 访客 cookie 抓太勤会被限流，sources.yaml 给微博源配了 interval_seconds: 86400。
+weibo_pool_file: "pool.yaml"        # 人工筛选的博主清单
+# 关键词搜索默认关闭（sources.yaml 里 weibo-search 的 enabled: false）。
+# 要开的话关键词必须是专有名词：泛词搜回来基本是广告和科普。
+weibo_search_queries: []            # 例：["腾势Z9S", "小米YU7"]
+weibo_min_engagement: 5             # 与粉丝量是「或」关系，刚官宣的事件互动常为 0
+weibo_min_followers: 100000
+
 log_level: INFO
 log_dir: logs

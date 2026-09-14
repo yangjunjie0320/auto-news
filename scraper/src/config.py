@@ -65,6 +65,17 @@ class Settings(BaseSettings):
     # 归档目录：每条文章落成 state/digest/YYYY-MM-DD.jsonl，是网站与 RSS 的全部输入。
     digest_dir: str = "state/digest"
 
+    # 微博抓取。访客 cookie 没有配额，抓太勤会被限流，
+    # 所以 sources.yaml 给微博源单独配了 interval_seconds: 86400。
+    weibo_pool_file: str = "pool.yaml"
+    # 搜索关键词必须是专有名词（品牌名、车型名）：泛词搜回来基本是广告和科普。
+    weibo_search_queries: list[str] = []
+    # 刚官宣的事件互动量普遍为 0，所以粉丝量兜底，不能只看互动
+    weibo_min_engagement: int = Field(default=5, ge=0)
+    weibo_min_followers: int = Field(default=100_000, ge=0)
+    weibo_delay_min_seconds: float = Field(default=3.0, ge=0)
+    weibo_delay_max_seconds: float = Field(default=6.0, ge=0)
+
     log_level: str = "INFO"
     log_dir: str = "logs"
     console_log: bool = True
@@ -92,6 +103,8 @@ class Settings(BaseSettings):
     def validate_ranges_and_dependencies(self) -> Settings:
         if self.source_delay_min_seconds > self.source_delay_max_seconds:
             raise ValueError("source_delay_min_seconds must not exceed source_delay_max_seconds")
+        if self.weibo_delay_min_seconds > self.weibo_delay_max_seconds:
+            raise ValueError("weibo_delay_min_seconds must not exceed weibo_delay_max_seconds")
         return self
 
     @classmethod

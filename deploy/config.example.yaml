@@ -23,4 +23,8 @@ source_delay_max_seconds: 3.0
 request_timeout: 20.0
 request_retries: 3
 
+# 微博：账号池每天抓一次（节奏在 sources.yaml 里配）。
+# 关键词搜索默认关闭，要开就填专有名词，并把 sources.yaml 里 weibo-search 打开。
+weibo_search_queries: []
+
 log_level: INFO

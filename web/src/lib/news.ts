@@ -4,6 +4,8 @@ export type Accent = "cyan" | "emerald" | "rose" | "amber";
 
 export interface NewsItem {
   id: string;
+  /** 来源类型：新闻站文章还是微博观点。旧数据没有这个字段时按 "web" 处理 */
+  kind: "web" | "weibo";
   title: string;
   points: string[];
   label: string;

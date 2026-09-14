@@ -12,6 +12,11 @@ class Source(BaseModel):
     key: str
     name: str
     enabled: bool = True
+    # 抓取间隔。留空则用全局 poll_interval_seconds。
+    # 微博用访客 cookie，抓太勤会被限流，所以单独放慢到每天一次。
+    interval_seconds: int | None = None
+    # 落进归档的来源类型，供网站与 RSS 区分新闻站文章和微博观点
+    kind: str = "web"
 
 
 @dataclass(frozen=True)
@@ -66,3 +71,5 @@ class Post(BaseModel):
     text_plain: str = ""
     full_text: str = ""
     image_urls: list[str] = []
+    # 来源类型，随抓取器设定，透到归档供网站与 RSS 区分新闻与微博观点
+    kind: str = "web"

@@ -35,6 +35,7 @@ def empty_cycle(accounts_total: int = 0) -> dict[str, int | bool]:
     return {
         "accounts_total": accounts_total,
         "attempted": 0,
+        "skipped": 0,  # 未到抓取间隔的源（如微博每天一次）
         "succeeded": 0,
         "failed": 0,
         "new": 0,

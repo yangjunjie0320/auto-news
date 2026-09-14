@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import datetime as dt
 from pathlib import Path
 
 from .atomic_json import AtomicJsonError, atomic_write_json, load_json_object
@@ -37,6 +38,16 @@ class StateStore:
     def is_seen(self, uid: str, mid: str) -> bool:
         entry = self._accounts.get(uid)
         return bool(entry) and mid in entry.get("mids", [])
+
+    def last_poll(self, uid: str) -> dt.datetime | None:
+        """上次成功抓取的时间。用于按源判断是否到点（微博每天一次，新闻站每小时）。"""
+        raw = self._data.get("accounts", {}).get(uid, {}).get("last_poll", "")
+        if not raw:
+            return None
+        try:
+            return dt.datetime.fromisoformat(raw)
+        except ValueError:
+            return None
 
     def mark_seen(self, uid: str, mids: list[str], *, last_poll: str = "") -> None:
         entry = self._accounts.setdefault(uid, {"mids": []})
