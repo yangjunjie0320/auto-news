@@ -1,67 +1,37 @@
-# auto-news-monitor 配置模板。复制为 config.yaml 并填入真实值（config.yaml 不入 git）。
+# auto-news 抓取端配置模板。复制为 config.yaml 并填入真实值（config.yaml 不入 git）。
 # 所有键支持 AUTO_NEWS_MONITOR_ 前缀的环境变量覆盖。
-
-# 飞书投递总开关。只给网站供数据时设成 false：不建飞书客户端、不推卡片、
-# 不跑转发与日报调度，链路只剩「轮询 -> 分类翻译 -> 写 digest jsonl」。
-# 设成 false 时下面三个凭证都不需要填。
-feishu_enabled: true
-
-# 飞书自建应用凭证（feishu_enabled 为 true 时必填）。权限：im:message、im:resource、im:chat:readonly。
-app_id: ""
-app_secret: ""
-chat_id: ""            # 推送目标群（--list-chats 挑）
+#
+# 注意 Settings 是 extra="forbid"：多一个拼错的键是硬错误，不是警告。
 
 sources_file: "sources.yaml"
 state_file: "state/seen.json"
 health_file: "state/health.json"
 
+# 归档目录。每条文章落成 state/digest/YYYY-MM-DD.jsonl，
+# 这是网站与 RSS 的全部输入，也是本项目唯一的产出。
+digest_dir: "state/digest"
+
 # 轮询节奏
 poll_interval_seconds: 3600           # 每小时一轮
-max_new_pushes_per_cycle: 25          # 单源一轮最多推送的新条目数（防刷屏）
+max_new_pushes_per_cycle: 25          # 单源一轮最多处理的新条目数
 seen_mids_per_account: 300
-max_article_age_hours: 72             # 精确发布时间的文章超过 72h 不补推
+max_article_age_hours: 72             # 精确发布时间的文章超过 72h 不再补录
 
-# 抓取节流
+# 抓取节流。境外服务器如果遇到限流，把延迟调大。
 source_delay_min_seconds: 1.0
 source_delay_max_seconds: 3.0
 request_timeout: 20.0
 request_retries: 3
 
-# DeepSeek 分类
+# DeepSeek 分类（车圈热点/产品发布/谍照申报/市场数据/资本市场/
+# 出海信息/政策监管/行业观察/广告/汽车无关）。
+# 广告、汽车无关和非中国内容默认丢弃，不进归档。
 classification_enabled: true
 deepseek_api_key: ""
-promo_to_digest_only: true   # 软文/通稿不推实时卡片，只落日报池
 
-# 逐条中译英，结果写进 digest 的 title_en/summary_en，供英文站与英文 RSS 使用。
-# 分类之后单独调一次，不与分类合并（混在一起会串品牌英文名）。
-# 失败只降级成没有英文，中文字段不受影响。
+# 中译英，结果写进归档的 title_en/summary_en，供英文站与英文 RSS 使用。
+# 分类之后单独调一次。失败只降级成没有英文，中文字段和中文 RSS 不受影响。
 translate_enabled: true
-
-# 卡片转发与多维表格归档（可选）
-forward_enabled: false
-forward_chat_id: ""
-bitable_url: ""
-bitable_table_name: "数据表"
 
 log_level: INFO
 log_dir: logs
-
-# 日报聚合：网站新闻聚成事件（同型官方数据合并成盘点），账号池博主微博
-# 挂载到事件下或聚成新事件。事件二分：详讯（有网站文章或多条微博）与
-# 短讯（单条微博 + 散装观点）。卡片放详讯的标题+中文缩写；英文对照、
-# 图片、原文进飞书文档，默认折叠。
-digest_archive_enabled: false    # 把文章落进 state/digest/*.jsonl（网站的输入，与飞书无关）
-digest_report_enabled: false     # 08:00 飞书日报（需要飞书客户端）
-digest_send_time: "08:00"        # 北京时间，覆盖前一自然日
-digest_pool_enabled: true        # 账号池（pool.yaml，沿用 weibo-monitor 的清单）
-digest_pool_file: "pool.yaml"
-pool_classify_batch_size: 20     # 池内微博批量分类大小；<=1 退回逐条
-digest_weibo_enabled: true       # 搜索补充：只搜池子没覆盖的事件
-digest_intro_enabled: true       # 头卡导语（多一次 DeepSeek 调用）
-digest_doc_enabled: true         # 每期日报写一篇飞书文档，链接放进首卡
-digest_doc_folder_token: ""      # 空 = 应用云空间根目录；需应用权限 docx:document + drive 分享权限
-digest_doc_chat_id: ""           # 文档链接卡片单独发到这个群（--list-chats 挑）；空 = 不单发
-digest_cover: "yesterday"        # 早晨发选 yesterday；晚上发（如 22:00）选 today
-digest_detail_enabled: true      # 详讯精修：每个详讯一次 DeepSeek 调用，产出标题+中英对照缩写
-digest_doc_images_enabled: true  # 文档配图（封面图+微博图）；需 drive 上传权限，缺权限自动降级无图
-digest_max_images_per_event: 4   # 每个详讯最多配几张图

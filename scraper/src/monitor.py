@@ -18,8 +18,8 @@ from .state import StateStore
 logger = logging.getLogger(__name__)
 
 
-class Pusher(Protocol):
-    async def push(self, post: Post) -> bool | PushResult: ...
+class Pipeline(Protocol):
+    async def process(self, post: Post) -> bool | PushResult: ...
 
 
 def is_stale_precise_article(
@@ -43,14 +43,14 @@ class Monitor:
         settings: Settings,
         fetchers: list[SourceFetcher],
         state: StateStore,
-        pusher: Pusher,
+        pipeline: Pipeline,
         health: HealthStore,
         http_client: httpx.AsyncClient,
     ) -> None:
         self._settings = settings
         self._fetchers = fetchers
         self._state = state
-        self._pusher = pusher
+        self._pipeline = pipeline
         self._health = health
         self._http = http_client
 
@@ -226,9 +226,9 @@ class Monitor:
 
         pushed = 0
         dropped = len(stale_posts)
-        # 批内按时间正序推，让飞书里新的排在下面（符合阅读顺序）
+        # 批内按时间正序处理，归档文件里的顺序与发布顺序一致
         for post in sorted(new_posts, key=lambda p: p.created_at):
-            raw_result = await self._pusher.push(post)
+            raw_result = await self._pipeline.process(post)
             result = (
                 raw_result
                 if isinstance(raw_result, PushResult)

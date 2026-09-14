@@ -122,7 +122,7 @@ def _paragraphs(container: object) -> tuple[str, bool]:
 def parse_detail(html: str) -> ArticleDetail:
     tree = HTMLParser(html)
     published_at = None
-    # 新浪部分页面的 article:published_time 与正文可见时间冲突；卡片应以页面
+    # 新浪部分页面的 article:published_time 与正文可见时间冲突；应以页面
     # 显示的 span.date 为准，meta 只作为旧模板兜底。
     date_node = tree.css_first("span.date")
     if date_node is not None:

@@ -1,4 +1,4 @@
-# 抓取数据源清单。key 必须与 src/sources 里注册的抓取器一致；name 用于卡片展示。
+# 抓取数据源清单。key 必须与 src/sources 里注册的抓取器一致；name 用于展示。
 sources:
   - {key: "yiche-u61014816", name: "易车·易车原创", enabled: true}
   # 车型日历没有文章正文；保留旧 key 便于回滚，默认改用可抓全文的新闻流。

@@ -3,7 +3,7 @@ from __future__ import annotations
 import datetime as dt
 import json
 
-from src.digest.store import DigestRecord, DigestStore
+from src.archive import DigestRecord, DigestStore
 
 
 def test_load_day_accepts_legacy_lines_without_new_fields(tmp_path) -> None:

@@ -42,8 +42,7 @@ cp config.example.yaml config.yaml
 chmod 600 config.yaml        # --self-check 会拒绝任何带 group/other 权限位的配置
 ```
 
-填 `deepseek_api_key`。关掉飞书后这是唯一必需的密钥——不再需要
-`app_id` / `app_secret` / `chat_id` / 转发 / 多维表格。
+填 `deepseek_api_key`。这是唯一必需的密钥。
 
 `config.yaml` 已在 `.gitignore` 里，不要提交。
 

@@ -47,7 +47,10 @@ class Classification:
     label: str = DEFAULT_LABEL
     china: bool = True
     summary: str = ""
-    promo: bool = False  # 商家导购/通稿软文：不推实时卡片，只进日报池
+    # 商家导购/通稿软文。分类器仍在产出这个信号，但目前没有消费者：
+    # 它既不进归档也不影响是否丢弃。要么接进 DigestRecord 供网站过滤广告，
+    # 要么从 prompt 里删掉省 token。见 README 的待办。
+    promo: bool = False
     headline: str = ""  # 事实化重写标题；空 = 沿用原标题
 
     def should_drop(self, settings: Settings) -> bool:

@@ -1,7 +1,7 @@
 import httpx
 
 from src.config import Settings
-from src.digest.llm import chat_json
+from src.llm import chat_json
 
 
 def _settings() -> Settings:
@@ -30,7 +30,7 @@ async def test_chat_json_success(respx_mock):
 
 
 async def test_chat_json_retries_on_503_then_succeeds(respx_mock, monkeypatch):
-    monkeypatch.setattr("src.digest.llm._RETRY_DELAYS", (0, 0))
+    monkeypatch.setattr("src.llm._RETRY_DELAYS", (0, 0))
     route = respx_mock.post("https://api.deepseek.com/chat/completions").mock(
         side_effect=[httpx.Response(503), httpx.Response(503), _ok('{"k": 1}')]
     )
@@ -40,7 +40,7 @@ async def test_chat_json_retries_on_503_then_succeeds(respx_mock, monkeypatch):
 
 
 async def test_chat_json_gives_up_after_retries(respx_mock, monkeypatch):
-    monkeypatch.setattr("src.digest.llm._RETRY_DELAYS", (0, 0))
+    monkeypatch.setattr("src.llm._RETRY_DELAYS", (0, 0))
     route = respx_mock.post("https://api.deepseek.com/chat/completions").mock(
         return_value=httpx.Response(503)
     )

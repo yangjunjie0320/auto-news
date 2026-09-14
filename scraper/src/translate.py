@@ -16,7 +16,7 @@ import re
 import httpx
 
 from .config import Settings
-from .digest.llm import chat_json
+from .llm import chat_json
 
 logger = logging.getLogger(__name__)
 

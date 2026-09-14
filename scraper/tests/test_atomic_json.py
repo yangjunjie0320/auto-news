@@ -3,7 +3,6 @@ import stat
 import pytest
 
 from src.atomic_json import AtomicJsonError, atomic_write_json, load_json_object
-from src.card_store import CardStore
 
 
 def test_atomic_json_roundtrip_and_private_permissions(tmp_path):
@@ -39,10 +38,3 @@ def test_atomic_json_missing_default_is_copied(tmp_path):
     loaded = load_json_object(tmp_path / "missing.json", default=default)
     loaded["other"] = True
     assert "other" not in default
-
-
-def test_card_store_rejects_invalid_schema(tmp_path):
-    path = tmp_path / "cards.json"
-    path.write_text('{"cards": []}', encoding="utf-8")
-    with pytest.raises(AtomicJsonError, match="cards must be an object"):
-        CardStore(path)

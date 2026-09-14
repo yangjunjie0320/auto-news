@@ -1,7 +1,7 @@
 [project]
 name = "auto-news-monitor"
 version = "0.1.0"
-description = "Car news monitor: poll yiche/sina/autohome and push new items to Feishu as interactive cards"
+description = "Poll yiche/sina/autohome, classify and translate with DeepSeek, archive as the website/RSS data source"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
@@ -10,7 +10,6 @@ dependencies = [
     "pydantic-settings>=2.0",
     "pyyaml>=6.0",
     "tenacity>=8.0",
-    "lark-oapi>=1.3",
     "selectolax>=0.3",
 ]
 

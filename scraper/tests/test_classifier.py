@@ -11,7 +11,7 @@ from src.classifier import (
     parse_result,
 )
 from src.config import Settings
-from tests.test_card import make_post
+from tests.conftest import make_post
 
 
 def test_parse_result_valid():

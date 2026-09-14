@@ -7,7 +7,7 @@ from pydantic import BaseModel
 
 
 class Source(BaseModel):
-    """一个抓取数据源（站点栏目）。key 作为去重命名空间，name 用于卡片展示。"""
+    """一个抓取数据源（站点栏目）。key 作为去重命名空间，name 用于展示。"""
 
     key: str
     name: str
@@ -57,7 +57,7 @@ class Post(BaseModel):
     - title        -> 文章标题
     - text_plain   -> 供分类与兼容旧投递逻辑的文本（标题 + 正文）
     - full_text    -> 详情页提取的完整正文（不含标题）
-    - image_urls   -> 封面图（0 或多张，取第一张上传飞书）
+    - image_urls   -> 封面图（0 或多张）
 
     转发/视频等微博特有字段保留默认值，投递层按缺省逻辑处理。
     """
