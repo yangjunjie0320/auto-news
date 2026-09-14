@@ -4,8 +4,9 @@
 
 ```
 seed     一次性：把 seed/digest 的历史数据注入 state 卷（幂等，已有数据就跳过）
-scraper  常驻：每小时轮询三个新闻站 -> DeepSeek 分类+翻译 -> 写 state/digest/*.jsonl
+scraper  常驻：轮询新闻站(每小时)与微博(每天) -> DeepSeek 分类+翻译 -> 写 digest
 builder  常驻循环：每小时跑一次 rebuild.sh，digest 没变就跳过
+backup   常驻循环：每天把 digest 全量快照到 ./backups/，保留 30 份
 caddy    发静态文件并终止 TLS，自动申请 Let's Encrypt 证书
 ```
 
@@ -26,12 +27,23 @@ docker compose run --rm --entrypoint sh scraper -c \
   'python -u main.py --config /config/config.yaml --probe sina-newcar-news'
 docker compose run --rm --entrypoint sh scraper -c \
   'python -u main.py --config /config/config.yaml --probe autohome-newbrand'
+docker compose run --rm --entrypoint sh scraper -c \
+  'python -u main.py --config /config/config.yaml --probe weibo-pool'
 ```
 
-每个应打印最多 5 条真实新车资讯。空结果或解析异常 = 门槛未过。
+前三个应各打印最多 5 条真实新车资讯。空结果或解析异常 = 门槛未过。
 
 汽车之家是 gb2312 编码，境外 CDN 可能返回不同页面，要肉眼核对标题内容是否合理，
 不能只看有没有输出。
+
+**微博这一条单独说**：它用的是访客 cookie，对境外 IP 的限流通常比新闻站严得多。
+`--probe weibo-pool` 会遍历 34 个账号（带随机延迟，约 3 分钟）。看日志里的
+`weibo timeline failed` 有多少条：
+- 全部失败 → 境外抓不动微博，在 `sources.yaml` 里把 `weibo-pool` 关掉即可，
+  不影响新闻站那条线
+- 零星失败 → 正常，单账号失败不会让整个源失败
+- 出现 `RateLimitedError`/`challenge response` → IP 级限流，重试无益，
+  要么关掉微博源，要么给它配代理
 
 门槛不过的退路：抓取放回境内机器，只把网站部署到境外；或给抓取配代理。
 
@@ -144,6 +156,39 @@ git pull && docker compose up -d --build
 
 **没有单实例保护。** 代码里没有文件锁也没有 PID 文件。两个实例同时跑会写坏 state。
 
+## 备份与还原
+
+`backup` 服务每天把 `state/digest`（和 `seen.json`）全量打包到宿主机的
+`./backups/state-<UTC时间戳>.tar.gz`，保留 30 份。数据是纯文本且只追加，
+压缩后极小（76 条 ≈ 13KB），所以直接全量快照，不做增量。
+
+**这只是本机快照，不是异地备份。** 服务器整台没了备份也跟着没。
+把 `./backups/` 同步到别处（rclone、S3、另一台机器的 rsync）是必须另外做的一步。
+
+手动触发一次：
+
+```
+docker compose exec backup /deploy/backup.sh
+```
+
+还原：
+
+```
+docker compose down                     # 先停掉，避免写入冲突
+mkdir -p /tmp/restore && tar -xzf backups/state-<时间戳>.tar.gz -C /tmp/restore
+docker compose run --rm -v /tmp/restore:/restore:ro --entrypoint sh seed -c \
+  'rm -rf /data/state/digest && cp -a /restore/digest /data/state/ \
+   && [ -f /restore/seen.json ] && cp /restore/seen.json /data/state/ || true'
+docker compose up -d
+docker compose exec builder /deploy/rebuild.sh   # 立刻用还原的数据重建
+```
+
+还原后务必核对条数对得上：
+
+```
+docker compose run --rm --entrypoint sh seed -c 'cat /data/state/digest/*.jsonl | wc -l'
+```
+
 ## 还没做的
 
-- 备份：`state` 卷里的 digest 是不可再生的历史数据，没有备份机制。
+- 异地备份（见上）。

@@ -75,6 +75,29 @@ services:
 
   # Caddy 同时做 TLS 终止和静态文件服务，不需要在它后面再放一层 nginx。
   # SITE_ADDRESS 填真实域名时自动申请并续期 Let's Encrypt 证书。
+  # state 里的 digest 是不可再生的历史数据，全量快照到宿主机的 ./backups/。
+  # 数据是纯文本且只追加，压完极小，所以不做增量。
+  backup:
+    build:
+      context: ../scraper
+    image: auto-news-scraper
+    restart: always
+    user: *appuser
+    depends_on:
+      seed:
+        condition: service_completed_successfully
+    volumes:
+      - state:/data/state:ro
+      - ./backups:/backups
+      - ./backup.sh:/deploy/backup.sh:ro
+      - ./backup-loop.sh:/deploy/backup-loop.sh:ro
+    environment:
+      STATE_DIR: /data/state
+      BACKUP_DIR: /backups
+      BACKUP_INTERVAL_SECONDS: "86400"
+      BACKUP_KEEP: "30"
+    command: ["/bin/sh", "/deploy/backup-loop.sh"]
+
   caddy:
     image: caddy:2-alpine
     restart: always
